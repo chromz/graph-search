@@ -1,0 +1,2 @@
+subdir('algorithms')
+subdir('sudoku')
