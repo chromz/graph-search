@@ -14,7 +14,13 @@ int main(int argc, char **argv)
 	}
 	if (strcmp(argv[1], "sudoku") == 0) {
 		struct sudoku_board *board = sudoku_read(argv[2]);
+		if (board == NULL) {
+			printf("ERROR: Invalid input\n");
+			printf(usage, argv[0]);
+			return 1;
+		}
 		sudoku_print_board(board);
+		sudoku_delete_board(&board);
 	} else {
 		printf(usage, argv[0]);
 		return 1;

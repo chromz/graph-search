@@ -6,6 +6,7 @@
 struct sudoku_board {
 	int **grid;
 	unsigned size;
+	unsigned freespcs;
 };
 
 struct sudoku_board *sudoku_read(char *in);

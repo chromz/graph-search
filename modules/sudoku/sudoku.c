@@ -10,18 +10,6 @@
 #define BOARD_SIZE 4
 
 
-static int get_number(char e)
-{
-	if (e == '.') {
-		return 0;
-	}
-	if (!isdigit(e)) {
-		return -1;
-	}
-	return e - '0';
-}
-
-
 void sudoku_delete_board(struct sudoku_board **pboard)
 {
 	struct sudoku_board *board = *pboard;
@@ -60,12 +48,16 @@ struct sudoku_board *sudoku_read(char *in)
 	}
 	for (int i = 0; i < board->size; ++i) {
 		for (int j = 0; j <  board->size; ++j) {
-			int num = get_number(*in++);
-			if (num == -1) {
+			char e = *in++;
+			if (e == '.') {
+				board->grid[i][j] = 0;
+			} else if (!isdigit(e)) {
 				sudoku_delete_board(&board);
 				return NULL;
+			} else {
+
+				board->grid[i][j] = e - '0';
 			}
-			board->grid[i][j] = num;
 		}
 	}
 	return board;
