@@ -32,12 +32,13 @@ static void set_pos(void *e, size_t pos)
 
 
 
-int a_star(void *start, bool (*goaltest)(void *),
-	struct a_star_node *(*expand)(void *))
+int a_star_solve(void *start, bool (*goaltest)(void *),
+	struct a_star_node *(*expand)(void *),
+	int (*path_cost)(void *c, void *n),
+	int (*heuristic)(void *c, void *n))
 {
 	pqueue_t *frontier;
 	struct a_star_node *visited = NULL;
-	struct a_star_node *costs = NULL;
 	struct a_star_node *start_node = malloc(sizeof(struct a_star_node));
 	if (start_node == NULL) {
 		return -1;
@@ -54,16 +55,25 @@ int a_star(void *start, bool (*goaltest)(void *),
 	}
 	pqueue_insert(frontier, start_node);
 	HASH_ADD_PTR(visited, elm, start_node);
-	HASH_ADD_PTR(costs, elm, start_node);
 
 	while (pqueue_size(frontier)) {
 		struct a_star_node *cnode = pqueue_pop(frontier);
 		if ((*goaltest)(cnode->elm)) {
 			return 1;
 		}
-		struct a_star_node *neighbors = (*expand)(cnode->elm);	
-		while ((neighbors++) != NULL) {
+		struct a_star_node *next= (*expand)(cnode->elm);	
+		while ((next++) != NULL) {
+			int cost = (*path_cost)(cnode, next) +
+				cnode->cost;
 
+			struct a_star_node *in;
+			if (!HASH_FIND_PTR(visited, next, in) ||
+				cost < next->cost) {
+				next->cost = cost;
+				next->pri = cost + (*heuristic)(next);
+				next->prev = cnode;
+				pqueue_insert(frontier, next);
+			}
 		}
 	}
 	return 0;
