@@ -12,6 +12,8 @@ has_uthash = c.has_header('uthash.h')
 assert(has_uthash, 'uthash is required, please see' +
   'https://troydhanson.github.io/uthash/')
 
+subdir('algorithms/pqueue')
+libs_include_dirs = include_directories('algorithms/pqueue')
 algs_lib = static_library('algorithms', algs_sources,
   include_directories: libs_include_dirs,
   dependencies: pqueue_dep)

@@ -1,6 +1,7 @@
 // Rodrigo Custodio
 
 #include "sudoku/sudoku.h"
+#include "algorithms/a_star.h"
 #include <stdio.h>
 #include <string.h>
 
