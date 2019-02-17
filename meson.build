@@ -8,5 +8,13 @@ libs_include_dirs = include_directories('libs')
 
 subdir('libs')
 subdir('modules')
-subdir('cli')
+
+cli_sources = [
+    'cli/cli.c'
+]
+
+executable('cli', 
+           sources: cli_sources,
+           include_directories : graph_search_include_dirs,
+           link_with: [sudoku_lib, algs_lib])
 
