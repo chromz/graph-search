@@ -3,3 +3,5 @@ let g:ale_c_clangtidy_checks =  ['*']
 let g:ale_linters = {
 \   'c': ['cppcheck', 'clangcheck', 'clangtidy'],
 \}
+
+command! Debug :TermdebugCommand builddir/cli sudoku .4.13.4.1..4.21.
