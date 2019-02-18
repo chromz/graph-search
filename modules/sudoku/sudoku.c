@@ -9,6 +9,26 @@
 
 #define BOARD_SIZE 4
 
+bool sudoku_goaltest(void *e)
+{
+	struct sudoku_board *board = e;
+
+}
+
+struct a_star_node *soduku_expand(void *e)
+{
+
+}
+
+int sudoku_path_cost(void *c, void *n)
+{
+
+}
+int sudoku_heuristic(void *n)
+{
+
+}
+
 
 void sudoku_delete_board(struct sudoku_board **pboard)
 {

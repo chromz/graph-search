@@ -1,8 +1,6 @@
 // Rodrigo Custodio
 
-#include "pqueue/pqueue.h"
 #include "a_star.h"
-#include <stdbool.h>
 
 
 static int cmp_pri(pqueue_pri_t next, pqueue_pri_t curr)
@@ -33,9 +31,9 @@ static void set_pos(void *e, size_t pos)
 
 
 int a_star_solve(void *start, bool (*goaltest)(void *),
-	struct a_star_node *(*expand)(void *),
-	int (*path_cost)(void *c, void *n),
-	int (*heuristic)(void *c, void *n))
+		 struct a_star_node *(*expand)(void *),
+		 int (*path_cost)(void *c, void *n),
+		 int (*heuristic)(void *n))
 {
 	pqueue_t *frontier;
 	struct a_star_node *visited = NULL;
@@ -61,14 +59,15 @@ int a_star_solve(void *start, bool (*goaltest)(void *),
 		if ((*goaltest)(cnode->elm)) {
 			return 1;
 		}
-		struct a_star_node *next= (*expand)(cnode->elm);	
+		struct a_star_node *next= (*expand)(cnode->elm);
 		while ((next++) != NULL) {
 			int cost = (*path_cost)(cnode, next) +
 				cnode->cost;
 
 			struct a_star_node *in;
-			if (!HASH_FIND_PTR(visited, next, in) ||
-				cost < next->cost) {
+			HASH_FIND_PTR(visited, next, in);
+			if (!in ||
+			    cost < next->cost) {
 				next->cost = cost;
 				next->pri = cost + (*heuristic)(next);
 				next->prev = cnode;

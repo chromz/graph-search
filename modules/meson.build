@@ -6,12 +6,14 @@ sudoku_lib = static_library('sudoku', sudoku_sources)
 
 algs_sources = [
   'algorithms/a_star.c',
+  'algorithms/a_star.h',
 ]
 
 has_uthash = c.has_header('uthash.h')
 assert(has_uthash, 'uthash is required, please see' +
   'https://troydhanson.github.io/uthash/')
 
-algs_lib = static_library('algorithms', algs_sources,
+algs_lib = static_library('algorithms',
+  sources: algs_sources,
   include_directories: libs_include_dirs,
   dependencies: pqueue_dep)
