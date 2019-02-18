@@ -12,6 +12,32 @@
 #define BOARD_SIZE 4
 #define BOARD_MUL 2
 
+static struct sudoku_board *sudoku_new_board(int size)
+{
+	struct sudoku_board *board = malloc(sizeof(struct sudoku_board));
+	board->size = size;
+	board->grid = malloc(board->size * sizeof(int *));
+	board->freespcs = 0;
+	for (int i = 0; i < board->size; ++i) {
+		board->grid[i] = malloc(board->size * sizeof(int));
+	}
+	return board;
+}
+
+static struct sudoku_board *sudoku_board_clone(struct sudoku_board *board)
+{
+	struct sudoku_board *new_board= malloc(sizeof(struct sudoku_board));
+	new_board->size = board->size;
+	new_board->grid = malloc(new_board->size * sizeof(int *));
+	new_board->freespcs = board->freespcs;
+	for (int i = 0; i < new_board->size; ++i) {
+		new_board->grid[i] = malloc(new_board->size * sizeof(int));
+		memcpy(new_board->grid[i], board->grid[i],
+		       new_board->size * sizeof(int));
+	}
+	return new_board;
+}
+
 bool sudoku_goaltest(void *e)
 {
 	struct sudoku_board *board = e;
@@ -51,7 +77,8 @@ bool sudoku_goaltest(void *e)
 	return true;
 }
 
-static bool check_grid(struct sudoku_board *board, int num, int x, int y)
+static bool check_grid_section(struct sudoku_board *board,
+			       int num, int x, int y)
 {
 	for (int i = x; i < x + BOARD_MUL; ++i) {
 		for (int j = y; j < y + BOARD_MUL; ++j) {
@@ -60,31 +87,32 @@ static bool check_grid(struct sudoku_board *board, int num, int x, int y)
 			}
 		}
 	}
+	return false;
 }
 
 
 static bool is_in_grid(struct sudoku_board *board, int num, int row, int col)
 {
 	if (row < BOARD_MUL && col < BOARD_MUL) {
-		return check_grid(board, num, 0, 0);
+		return check_grid_section(board, num, 0, 0);
 	}
 
 	if (row >= BOARD_MUL && col < BOARD_MUL) {
-		return check_grid(board, num, BOARD_MUL, 0);
+		return check_grid_section(board, num, BOARD_MUL, 0);
 	}
 	if (row < BOARD_MUL && col >= BOARD_MUL) {
-		return check_grid(board, num, 0, BOARD_MUL);
+		return check_grid_section(board, num, 0, BOARD_MUL);
 	}
 
 	if (row >= BOARD_MUL && col >= BOARD_MUL) {
-		return check_grid(board, num, BOARD_MUL, BOARD_MUL);
+		return check_grid_section(board, num, BOARD_MUL, BOARD_MUL);
 	}
 
 	return false;
 }
 
 static void add_valid_states(GArray *neighbors, struct sudoku_board *board,
-	                     int row, int col)
+			     int row, int col)
 {
 	for (int i = 0; i < board->size; ++i) {
 		bool is_good = true;
@@ -96,9 +124,11 @@ static void add_valid_states(GArray *neighbors, struct sudoku_board *board,
 			}
 		}
 		if (is_good) {
-			// TODO Create a copy of grid and
-			// append it to the array
-			/* g_array_append_val(neighbors, */ 
+			struct sudoku_board *new_board =
+				sudoku_board_clone(board);
+			new_board->grid[row][col] = i;
+			new_board->freespcs--;
+			g_array_append_val(neighbors, new_board);
 		}
 	}
 }
@@ -122,11 +152,15 @@ GArray *soduku_expand(void *e)
 
 int sudoku_path_cost(void *c, void *n)
 {
-
+	struct sudoku_board *board1 = (struct sudoku_board *) c;
+	struct sudoku_board *board2 = (struct sudoku_board *) n;
+	return (board2->freespcs > board1->freespcs)
+		? board2->freespcs - board1->freespcs
+		: board1->freespcs - board2->freespcs;
 }
 int sudoku_heuristic(void *n)
 {
-
+	return 0;
 }
 
 
@@ -160,13 +194,7 @@ struct sudoku_board *sudoku_read(char *in)
 	if (len != BOARD_SIZE * BOARD_SIZE) {
 		return NULL;
 	}
-	struct sudoku_board *board = malloc(sizeof(struct sudoku_board));
-	board->size = BOARD_SIZE;
-	board->grid = malloc(board->size * sizeof(int *));
-	board->freespcs = 0;
-	for (int i = 0; i < board->size; ++i) {
-		board->grid[i] = malloc(board->size * sizeof(int));
-	}
+	struct sudoku_board *board = sudoku_new_board(BOARD_SIZE);
 	for (int i = 0; i < board->size; ++i) {
 		for (int j = 0; j <  board->size; ++j) {
 			char e = *in++;
