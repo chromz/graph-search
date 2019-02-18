@@ -21,7 +21,11 @@ int main(int argc, char **argv)
 			return 1;
 		}
 		printf("win? %d\n", sudoku_goaltest(board));
+		printf("Solving sudoku... \n");
 		sudoku_print_board(board);
+		int result = a_star_solve(board, sudoku_goaltest, sudoku_expand,
+			     sudoku_path_cost, sudoku_heuristic);
+		printf("Result %d\n", result);
 		sudoku_delete_board(&board);
 	} else {
 		printf(usage, argv[0]);

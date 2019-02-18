@@ -44,9 +44,9 @@ bool sudoku_goaltest(void *e)
 	int row[BOARD_SIZE] = {0};
 	int column[BOARD_SIZE] = {0};
 	int grid[BOARD_SIZE] = {0};
-	bool check_row[BOARD_SIZE] = {false};
-	bool check_column[BOARD_SIZE] = {false};
-	bool check_grid[BOARD_SIZE] = {false};
+	bool check_row[BOARD_SIZE + 1] = {false};
+	bool check_column[BOARD_SIZE + 1] = {false};
+	bool check_grid[BOARD_SIZE + 1] = {false};
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		memcpy(&row, board->grid[i], sizeof(row));
 		for (int j = 0; j < BOARD_SIZE; ++j) {
@@ -58,14 +58,18 @@ bool sudoku_goaltest(void *e)
 			grid[j] = board->grid[index_row][index_col];
 		}
 		for (int k = 0; k < BOARD_SIZE; ++k) {
-			if (check_row[row[k] - 1]
-			    || check_column[column[k] -1 ]
-			    || check_grid[grid[k] - 1]) {
+			if (check_row[row[k]]
+			    || check_column[column[k]]
+			    || check_grid[grid[k]]) {
 				return false;
 			}
-			check_row[row[k] - 1] = true;
-			check_column[column[k] - 1] = true;
-			check_grid[grid[k] - 1] = true;
+			check_row[row[k]] = true;
+			check_column[column[k]] = true;
+			check_grid[grid[k]] = true;
+		}
+		if (check_row[0] || check_column[0] 
+		    || check_grid[0]) {
+			return false;
 		}
 		memset(row, 0, sizeof(row));
 		memset(column, 0, sizeof(column));
@@ -133,7 +137,7 @@ static void add_valid_states(GArray *neighbors, struct sudoku_board *board,
 	}
 }
 
-GArray *soduku_expand(void *e)
+GArray *sudoku_expand(void *e)
 {
 	struct sudoku_board *board = e;
 	GArray *neighbors = g_array_new(false, false,

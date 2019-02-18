@@ -16,7 +16,7 @@ struct sudoku_board {
 struct sudoku_board *sudoku_read(char *in);
 
 bool sudoku_goaltest(void *e);
-GArray *soduku_expand(void *e);
+GArray *sudoku_expand(void *e);
 int sudoku_path_cost(void *c, void *n);
 int sudoku_heuristic(void *n);
 
