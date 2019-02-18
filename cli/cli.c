@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 			printf(usage, argv[0]);
 			return 1;
 		}
+		printf("win? %d\n", sudoku_goaltest(board));
 		sudoku_print_board(board);
 		sudoku_delete_board(&board);
 	} else {
