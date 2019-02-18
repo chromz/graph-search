@@ -2,7 +2,7 @@
 #ifndef A_STAR_LIB
 #define A_STAR_LIB
 
-#include "../../libs/pqueue/pqueue.h"
+#include "pqueue/pqueue.h"
 #include <gmodule.h>
 #include <uthash.h>
 #include <stdbool.h>

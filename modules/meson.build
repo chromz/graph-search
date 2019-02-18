@@ -10,6 +10,7 @@ assert(has_uthash, 'uthash is required, please see' +
 
 algs_lib = static_library('algorithms',
   sources: algs_sources,
+  include_directories : libs_include_dirs,
   dependencies: [pqueue_dep, glib_dep])
 
 sudoku_sources = [
@@ -17,6 +18,7 @@ sudoku_sources = [
 ]
 
 sudoku_lib = static_library('sudoku', sudoku_sources,
+  include_directories : libs_include_dirs,
   link_with : [algs_lib],
   dependencies : [glib_dep])
 
