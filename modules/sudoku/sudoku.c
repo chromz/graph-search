@@ -121,18 +121,23 @@ static void add_valid_states(GArray *neighbors, struct sudoku_board *board,
 	for (int i = 0; i < board->size; ++i) {
 		bool is_good = true;
 		for (int j = 0; j < board->size; ++j) {
-			if (board->grid[row][j] == i || board->grid[j][col]
+			if (board->grid[row][j] == i || board->grid[j][col] == i
 			    || is_in_grid(board, i, row, col)) {
 				is_good = false;
 				break;
 			}
 		}
 		if (is_good) {
+			printf("New valid state\n");
 			struct sudoku_board *new_board =
 				sudoku_board_clone(board);
 			new_board->grid[row][col] = i;
 			new_board->freespcs--;
-			g_array_append_val(neighbors, new_board);
+			struct a_star_node *new_node = {
+				.elm = new_board,
+			};
+			// DEBUG
+			g_array_append_val(neighbors, new_node);
 		}
 	}
 }
@@ -142,6 +147,8 @@ GArray *sudoku_expand(void *e)
 	struct sudoku_board *board = e;
 	GArray *neighbors = g_array_new(false, false,
 		                        sizeof(struct a_star_node *));
+	printf("Expanding sudoku board\n");
+	sudoku_print_board(board);
 	for (int i = 0; i < board->size; ++i) {
 		for (int j = 0; j < board->size; ++j) {
 			if (board->grid[i][j] == 0) {
