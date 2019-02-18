@@ -31,7 +31,7 @@ static void set_pos(void *e, size_t pos)
 
 
 int a_star_solve(void *start, bool (*goaltest)(void *),
-		 struct a_star_node *(*expand)(void *),
+		 GArray *(*expand)(void *),
 		 int (*path_cost)(void *c, void *n),
 		 int (*heuristic)(void *n))
 {
@@ -59,11 +59,13 @@ int a_star_solve(void *start, bool (*goaltest)(void *),
 		if ((*goaltest)(cnode->elm)) {
 			return 1;
 		}
-		struct a_star_node *next= (*expand)(cnode->elm);
-		while ((next++) != NULL) {
+		GArray *neighbors = (*expand)(cnode->elm);
+		for (int i = 0; i < neighbors->len; ++i) {
+			struct a_star_node *next = 
+				g_array_index(neighbors,
+					      struct a_star_node *, i);
 			int cost = (*path_cost)(cnode, next) +
-				cnode->cost;
-
+				   cnode->cost;
 			struct a_star_node *in;
 			HASH_FIND_PTR(visited, next, in);
 			if (!in ||

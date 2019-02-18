@@ -2,6 +2,7 @@
 
 #include "sudoku.h"
 #include <ctype.h>
+#include <gmodule.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -9,6 +10,7 @@
 #include <string.h>
 
 #define BOARD_SIZE 4
+#define BOARD_MUL 2
 
 bool sudoku_goaltest(void *e)
 {
@@ -23,14 +25,16 @@ bool sudoku_goaltest(void *e)
 		memcpy(&row, board->grid[i], sizeof(row));
 		for (int j = 0; j < BOARD_SIZE; ++j) {
 			column[j] = board->grid[i][j];
-			int index_row = (i * 2) % BOARD_SIZE + j % 2;
-			int index_col = (i / 2) * 2 + j / 2;
+			int index_row = (i * BOARD_MUL) 
+				        % BOARD_SIZE + j % BOARD_MUL;
+			int index_col = (i / BOARD_MUL) * BOARD_MUL 
+				        + j / BOARD_MUL;
 			grid[j] = board->grid[index_row][index_col];
 		}
 		for (int k = 0; k < BOARD_SIZE; ++k) {
-			if (check_row[row[k] - 1] ||
-			    check_column[column[k] -1 ] ||
-			    check_grid[grid[k] - 1]) {
+			if (check_row[row[k] - 1]
+			    || check_column[column[k] -1 ]
+			    || check_grid[grid[k] - 1]) {
 				return false;
 			}
 			check_row[row[k] - 1] = true;
@@ -47,10 +51,74 @@ bool sudoku_goaltest(void *e)
 	return true;
 }
 
-struct a_star_node *soduku_expand(void *e)
+static bool check_grid(struct sudoku_board *board, int num, int x, int y)
 {
+	for (int i = x; i < x + BOARD_MUL; ++i) {
+		for (int j = y; j < y + BOARD_MUL; ++j) {
+			if (num == board->grid[i][j]) {
+				return true;
+			}
+		}
+	}
+}
+
+
+static bool is_in_grid(struct sudoku_board *board, int num, int row, int col)
+{
+	if (row < BOARD_MUL && col < BOARD_MUL) {
+		return check_grid(board, num, 0, 0);
+	}
+
+	if (row >= BOARD_MUL && col < BOARD_MUL) {
+		return check_grid(board, num, BOARD_MUL, 0);
+	}
+	if (row < BOARD_MUL && col >= BOARD_MUL) {
+		return check_grid(board, num, 0, BOARD_MUL);
+	}
+
+	if (row >= BOARD_MUL && col >= BOARD_MUL) {
+		return check_grid(board, num, BOARD_MUL, BOARD_MUL);
+	}
+
+	return false;
+}
+
+static void add_valid_states(GArray *neighbors, struct sudoku_board *board,
+	                     int row, int col)
+{
+	for (int i = 0; i < board->size; ++i) {
+		bool is_good = true;
+		for (int j = 0; j < board->size; ++j) {
+			if (board->grid[row][j] == i || board->grid[j][col]
+			    || is_in_grid(board, i, row, col)) {
+				is_good = false;
+				break;
+			}
+		}
+		if (is_good) {
+			// TODO Create a copy of grid and
+			// append it to the array
+			/* g_array_append_val(neighbors, */ 
+		}
+	}
+}
+
+GArray *soduku_expand(void *e)
+{
+	struct sudoku_board *board = e;
+	GArray *neighbors = g_array_new(false, false,
+		                        sizeof(struct a_star_node *));
+	for (int i = 0; i < board->size; ++i) {
+		for (int j = 0; j < board->size; ++j) {
+			if (board->grid[i][j] == 0) {
+				add_valid_states(neighbors, board, i, j);
+			}
+		}
+	}
+	return neighbors;
 
 }
+
 
 int sudoku_path_cost(void *c, void *n)
 {
@@ -95,6 +163,7 @@ struct sudoku_board *sudoku_read(char *in)
 	struct sudoku_board *board = malloc(sizeof(struct sudoku_board));
 	board->size = BOARD_SIZE;
 	board->grid = malloc(board->size * sizeof(int *));
+	board->freespcs = 0;
 	for (int i = 0; i < board->size; ++i) {
 		board->grid[i] = malloc(board->size * sizeof(int));
 	}
@@ -103,6 +172,7 @@ struct sudoku_board *sudoku_read(char *in)
 			char e = *in++;
 			if (e == '.') {
 				board->grid[i][j] = 0;
+				board->freespcs++;
 			} else if (!isdigit(e) && e > 0 && e <= board->size) {
 				sudoku_delete_board(&board);
 				return NULL;

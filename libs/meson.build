@@ -1,4 +1,5 @@
 libpqueue_sources = [
+  'pqueue/pqueue.h',
   'pqueue/pqueue.c',
 ]
 

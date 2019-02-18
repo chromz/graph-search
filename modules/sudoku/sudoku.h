@@ -3,7 +3,8 @@
 #ifndef SUDOKU_LIB_HEADER
 #define SUDOKU_LIB_HEADER
 
-#include "../algorithms/a_star.h"
+#include "algorithms/a_star.h"
+#include <gmodule.h>
 #include <stdbool.h>
 
 struct sudoku_board {
@@ -15,7 +16,7 @@ struct sudoku_board {
 struct sudoku_board *sudoku_read(char *in);
 
 bool sudoku_goaltest(void *e);
-struct a_star_node *soduku_expand(void *e);
+GArray *soduku_expand(void *e);
 int sudoku_path_cost(void *c, void *n);
 int sudoku_heuristic(void *n);
 

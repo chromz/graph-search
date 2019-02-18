@@ -1,12 +1,7 @@
-sudoku_sources = [
-  'sudoku/sudoku.c',
-]
 
-sudoku_lib = static_library('sudoku', sudoku_sources)
 
 algs_sources = [
   'algorithms/a_star.c',
-  'algorithms/a_star.h',
 ]
 
 has_uthash = c.has_header('uthash.h')
@@ -15,5 +10,13 @@ assert(has_uthash, 'uthash is required, please see' +
 
 algs_lib = static_library('algorithms',
   sources: algs_sources,
-  include_directories: libs_include_dirs,
-  dependencies: pqueue_dep)
+  dependencies: [pqueue_dep, glib_dep])
+
+sudoku_sources = [
+  'sudoku/sudoku.c',
+]
+
+sudoku_lib = static_library('sudoku', sudoku_sources,
+  link_with : [algs_lib],
+  dependencies : [glib_dep])
+
