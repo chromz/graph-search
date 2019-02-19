@@ -3,6 +3,7 @@
 #include "a_star.h"
 #include <gmodule.h>
 
+static void (*free_element_fun)(void *);
 
 static int cmp_pri(pqueue_pri_t next, pqueue_pri_t curr)
 {
@@ -29,7 +30,7 @@ static void set_pos(void *e, size_t pos)
 	((struct a_star_node *) e)->pos = pos;
 }
 
-void free_a_star_node(struct a_star_node *n, void (*free_elm)(void *))
+void inline free_a_star_node(struct a_star_node *n, void (*free_elm)(void *))
 {
 	free_elm(&n->elm);
 	free(n);
@@ -46,6 +47,12 @@ static inline void free_all(pqueue_t *frontier, GHashTable *visited,
 	pqueue_free(frontier);
 }
 
+static inline void free_a_star_node_void(void *pnode)
+{
+	struct a_star_node *node = pnode;
+	free_a_star_node(node, free_element_fun);
+}
+
 struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 				 GPtrArray *(*expand)(void *),
 				 gboolean (*compare)(gconstpointer,
@@ -55,8 +62,9 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 				 void (*free_elm)(void *))
 {
 	pqueue_t *frontier;
+	free_element_fun = free_elm;
 	GHashTable *visited = g_hash_table_new_full(NULL, compare,
-						    free_elm, NULL);
+						    free_element_fun, NULL);
 	struct a_star_node *start_node = malloc(sizeof(struct a_star_node));
 	if (start_node == NULL) {
 		return NULL;
@@ -77,6 +85,7 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 		if ((*goaltest)(cnode->elm)) {
 			// FREE ALL
 			printf("Found solution\n");
+			g_hash_table_steal(visited, cnode);
 			free_all(frontier, visited, free_elm);
 			return cnode;
 		}

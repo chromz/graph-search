@@ -61,44 +61,14 @@ static struct sudoku_board *sudoku_board_clone(struct sudoku_board *board)
 bool sudoku_goaltest(void *e)
 {
 	struct sudoku_board *board = e;
-	printf("Checking sudoku: \n");
-	sudoku_print_board(board);
-	int row[BOARD_SIZE] = {0};
-	int column[BOARD_SIZE] = {0};
-	int grid[BOARD_SIZE] = {0};
-	bool check_row[BOARD_SIZE + 1] = {false};
-	bool check_column[BOARD_SIZE + 1] = {false};
-	bool check_grid[BOARD_SIZE + 1] = {false};
-	for (int i = 0; i < BOARD_SIZE; ++i) {
-		memcpy(&row, board->grid[i], sizeof(row));
-		for (int j = 0; j < BOARD_SIZE; ++j) {
-			column[j] = board->grid[i][j];
-			int index_row = (i * BOARD_MUL) 
-				        % BOARD_SIZE + j % BOARD_MUL;
-			int index_col = (i / BOARD_MUL) * BOARD_MUL 
-				        + j / BOARD_MUL;
-			grid[j] = board->grid[index_row][index_col];
-		}
-		for (int k = 0; k < BOARD_SIZE; ++k) {
-			if (check_row[row[k]]
-			    || check_column[column[k]]
-			    || check_grid[grid[k]]) {
+	/* printf("Checking sudoku: \n"); */
+	/* sudoku_print_board(board); */
+	for (int i = 0; i < board->size; ++i) {
+		for (int j = 0; j < board->size; ++j) {
+			if (board->grid[i][j] == 0) {
 				return false;
 			}
-			check_row[row[k]] = true;
-			check_column[column[k]] = true;
-			check_grid[grid[k]] = true;
 		}
-		if (check_row[0] || check_column[0]
-		    || check_grid[0]) {
-			return false;
-		}
-		memset(row, 0, sizeof(row));
-		memset(column, 0, sizeof(column));
-		memset(grid, 0, sizeof(grid));
-		memset(check_row, 0, sizeof(check_row));
-		memset(check_column, 0, sizeof(check_row));
-		memset(check_grid, 0, sizeof(check_row));
 	}
 	return true;
 }
@@ -211,6 +181,7 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 			new_board->grid[row][col] = i;
 			new_board->freespcs--;
 			new_board->diffnum = diffnum;
+			free(diffnum);
 			struct a_star_node *new_node =
 				malloc(sizeof(struct a_star_node));
 			new_node->elm = new_board;
