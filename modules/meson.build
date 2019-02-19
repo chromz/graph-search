@@ -4,10 +4,6 @@ algs_sources = [
   'algorithms/a_star.c',
 ]
 
-has_uthash = c.has_header('uthash.h')
-assert(has_uthash, 'uthash is required, please see' +
-  'https://troydhanson.github.io/uthash/')
-
 algs_lib = static_library('algorithms',
   sources: algs_sources,
   include_directories : libs_include_dirs,

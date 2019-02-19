@@ -1,6 +1,7 @@
 // Rodrigo Custodio
 
 #include "a_star.h"
+#include <gmodule.h>
 
 
 static int cmp_pri(pqueue_pri_t next, pqueue_pri_t curr)
@@ -41,14 +42,13 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 				 void (*free_elm)(void **))
 {
 	pqueue_t *frontier;
-	struct a_star_node *visited = NULL;
+	GHashTable *visited = g_hash_table_new(NULL, NULL);
 	struct a_star_node *start_node = malloc(sizeof(struct a_star_node));
 	if (start_node == NULL) {
 		return NULL;
 	}
 	start_node->elm = start;
 	start_node->prev = NULL;
-	start_node->cost = 0;
 	start_node->pri = 0;
 
 	frontier = pqueue_init(1, cmp_pri, get_pri, set_pri, get_pos, set_pos);
@@ -57,32 +57,34 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 		return NULL;
 	}
 	pqueue_insert(frontier, start_node);
-	HASH_ADD_PTR(visited, elm, start_node);
+	g_hash_table_insert(visited, start_node, GINT_TO_POINTER(0));
 	while (pqueue_size(frontier)) {
 		struct a_star_node *cnode = pqueue_pop(frontier);
 		if ((*goaltest)(cnode->elm)) {
 			// FREE ALL
 			printf("Found solution\n");
+			pqueue_free(frontier);
 			return cnode;
 		}
 		GPtrArray *neighbors = (*expand)(cnode->elm);
 		for (int i = 0; i < neighbors->len; ++i) {
 			struct a_star_node *next = 
 				g_ptr_array_index(neighbors, i);
-			int cost = (*path_cost)(cnode, next) +
-				   cnode->cost;
-			struct a_star_node *in;
-			HASH_FIND_PTR(visited, next, in);
-			if (!in || cost < next->cost) {
-				next->cost = cost;
+			int ccost = GPOINTER_TO_INT(
+					g_hash_table_lookup(visited, cnode));
+			int cost = (*path_cost)(cnode, next) + ccost;
+			if (!g_hash_table_lookup_extended(visited,
+					                 next, NULL, NULL)
+			    || cost < GPOINTER_TO_INT(g_hash_table_lookup(
+					visited, cnode))) {
+				g_hash_table_insert(visited, next,
+						    GINT_TO_POINTER(cost));
 				next->pri = cost + (*heuristic)(next->elm);
 				pqueue_insert(frontier, next);
-			} else if (!in) {
-				free_a_star_node(next, free_elm);
 			}
 		}
 		g_ptr_array_free(neighbors, false);
-		free_a_star_node(cnode, free_elm);
+		/* free_a_star_node(cnode, free_elm); */
 	}
 	struct a_star_node *result = malloc(sizeof(struct a_star_node));
 	result->elm = NULL;

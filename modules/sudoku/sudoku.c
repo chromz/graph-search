@@ -135,6 +135,33 @@ static bool is_in_grid_with_diff(struct sudoku_board *board, int num,
 	return false;
 }
 
+static inline void sudoku_free_a_star_void(void *pboard)
+{
+	free_a_star_node((struct a_star_node *) pboard, sudoku_free_board_void);
+}
+
+inline void sudoku_free_board_void(void **pboard)
+{
+	sudoku_free_board((struct sudoku_board **)pboard);
+}
+
+
+void sudoku_free_board(struct sudoku_board **pboard)
+{
+	struct sudoku_board *board = *pboard;
+	if (board != NULL) {
+		for(unsigned i = 0; i < board->size; ++i) {
+			free(board->grid[i]);
+		}
+		if (board->diffnum != NULL) {
+			free(board->diffnum);
+		}
+		free(board->grid);
+		free(board);
+		*pboard = NULL;
+	}
+}
+
 static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 			     int row, int col)
 {
@@ -171,33 +198,6 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 			new_node->elm = new_board;
 			g_ptr_array_add(neighbors, new_node);
 		}
-	}
-}
-
-static inline void sudoku_free_a_star_void(void *pboard)
-{
-	free_a_star_node((struct a_star_node *) pboard, sudoku_free_board_void);
-}
-
-inline void sudoku_free_board_void(void **pboard)
-{
-	sudoku_free_board((struct sudoku_board **)pboard);
-}
-
-
-void sudoku_free_board(struct sudoku_board **pboard)
-{
-	struct sudoku_board *board = *pboard;
-	if (board != NULL) {
-		for(unsigned i = 0; i < board->size; ++i) {
-			free(board->grid[i]);
-		}
-		if (board->diffnum != NULL) {
-			free(board->diffnum);
-		}
-		free(board->grid);
-		free(board);
-		*pboard = NULL;
 	}
 }
 
