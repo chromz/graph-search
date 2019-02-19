@@ -30,7 +30,7 @@ static void set_pos(void *e, size_t pos)
 
 
 
-int a_star_solve(void *start, bool (*goaltest)(void *),
+struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 		 GArray *(*expand)(void *),
 		 int (*path_cost)(void *c, void *n),
 		 int (*heuristic)(void *n))
@@ -39,7 +39,7 @@ int a_star_solve(void *start, bool (*goaltest)(void *),
 	struct a_star_node *visited = NULL;
 	struct a_star_node *start_node = malloc(sizeof(struct a_star_node));
 	if (start_node == NULL) {
-		return -1;
+		return NULL;
 	}
 	start_node->elm = start;
 	start_node->prev = NULL;
@@ -49,15 +49,15 @@ int a_star_solve(void *start, bool (*goaltest)(void *),
 	frontier = pqueue_init(1, cmp_pri, get_pri, set_pri, get_pos, set_pos);
 	if (!frontier) {
 		free(start_node);
-		return -1;
+		return NULL;
 	}
 	pqueue_insert(frontier, start_node);
 	HASH_ADD_PTR(visited, elm, start_node);
-
 	while (pqueue_size(frontier)) {
 		struct a_star_node *cnode = pqueue_pop(frontier);
 		if ((*goaltest)(cnode->elm)) {
-			return 1;
+			printf("Found solution\n");
+			return cnode->elm;
 		}
 		GArray *neighbors = (*expand)(cnode->elm);
 		for (int i = 0; i < neighbors->len; ++i) {
@@ -68,8 +68,7 @@ int a_star_solve(void *start, bool (*goaltest)(void *),
 				   cnode->cost;
 			struct a_star_node *in;
 			HASH_FIND_PTR(visited, next, in);
-			if (!in ||
-			    cost < next->cost) {
+			if (!in || cost < next->cost) {
 				next->cost = cost;
 				next->pri = cost + (*heuristic)(next);
 				next->prev = cnode;
@@ -77,5 +76,7 @@ int a_star_solve(void *start, bool (*goaltest)(void *),
 			}
 		}
 	}
-	return 0;
+	struct a_star_node *result = malloc(sizeof(struct a_star_node));
+	result->elm = NULL;
+	return result;
 }

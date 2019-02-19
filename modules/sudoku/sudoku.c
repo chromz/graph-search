@@ -67,7 +67,7 @@ bool sudoku_goaltest(void *e)
 			check_column[column[k]] = true;
 			check_grid[grid[k]] = true;
 		}
-		if (check_row[0] || check_column[0] 
+		if (check_row[0] || check_column[0]
 		    || check_grid[0]) {
 			return false;
 		}
@@ -118,7 +118,7 @@ static bool is_in_grid(struct sudoku_board *board, int num, int row, int col)
 static void add_valid_states(GArray *neighbors, struct sudoku_board *board,
 			     int row, int col)
 {
-	for (int i = 0; i < board->size; ++i) {
+	for (int i = 1; i <= board->size; ++i) {
 		bool is_good = true;
 		for (int j = 0; j < board->size; ++j) {
 			if (board->grid[row][j] == i || board->grid[j][col] == i
@@ -128,15 +128,13 @@ static void add_valid_states(GArray *neighbors, struct sudoku_board *board,
 			}
 		}
 		if (is_good) {
-			printf("New valid state\n");
 			struct sudoku_board *new_board =
 				sudoku_board_clone(board);
 			new_board->grid[row][col] = i;
 			new_board->freespcs--;
-			struct a_star_node *new_node = {
-				.elm = new_board,
-			};
-			// DEBUG
+			struct a_star_node *new_node =
+				malloc(sizeof(struct a_star_node));
+			new_node->elm = new_board;
 			g_array_append_val(neighbors, new_node);
 		}
 	}
@@ -147,8 +145,6 @@ GArray *sudoku_expand(void *e)
 	struct sudoku_board *board = e;
 	GArray *neighbors = g_array_new(false, false,
 		                        sizeof(struct a_star_node *));
-	printf("Expanding sudoku board\n");
-	sudoku_print_board(board);
 	for (int i = 0; i < board->size; ++i) {
 		for (int j = 0; j < board->size; ++j) {
 			if (board->grid[i][j] == 0) {

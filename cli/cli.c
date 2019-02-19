@@ -20,11 +20,16 @@ int main(int argc, char **argv)
 			printf(usage, argv[0]);
 			return 1;
 		}
-		printf("win? %d\n", sudoku_goaltest(board));
 		printf("Solving sudoku... \n");
-		int result = a_star_solve(board, sudoku_goaltest, sudoku_expand,
-			     sudoku_path_cost, sudoku_heuristic);
-		printf("Result %d\n", result);
+		struct a_star_node *result = 
+			a_star_solve(board, sudoku_goaltest, sudoku_expand,
+				     sudoku_path_cost, sudoku_heuristic);
+		struct sudoku_board *final = result->elm;
+		if (final == NULL) {
+			printf("Error\n");
+		}
+		printf("Solution: \n");
+		/* sudoku_print_board(final); */
 		sudoku_delete_board(&board);
 	} else {
 		printf(usage, argv[0]);

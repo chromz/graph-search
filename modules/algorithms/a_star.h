@@ -16,7 +16,7 @@ struct a_star_node {
 	UT_hash_handle hh;
 };
 
-int a_star_solve(void *start, bool (*goaltest)(void *),
+struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 	GArray *(*expand)(void *),
 	int (*path_cost)(void *c, void *n),
 	int (*heuristic)(void *n));
