@@ -16,10 +16,13 @@ struct a_star_node {
 	UT_hash_handle hh;
 };
 
+void free_a_star_node(struct a_star_node *n, void (*free_elm)(void **));
+
 struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
-	GArray *(*expand)(void *),
-	int (*path_cost)(void *c, void *n),
-	int (*heuristic)(void *n));
+	GPtrArray *(*expand)(void *),
+	int (*path_cost)(void *, void *),
+	int (*heuristic)(void *),
+	void (*free_elm)(void **));
 
 
 

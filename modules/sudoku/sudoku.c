@@ -18,6 +18,7 @@ static struct sudoku_board *sudoku_new_board(int size)
 	board->size = size;
 	board->grid = malloc(board->size * sizeof(int *));
 	board->freespcs = 0;
+	board->diffnum = NULL;
 	for (int i = 0; i < board->size; ++i) {
 		board->grid[i] = malloc(board->size * sizeof(int));
 	}
@@ -30,6 +31,7 @@ static struct sudoku_board *sudoku_board_clone(struct sudoku_board *board)
 	new_board->size = board->size;
 	new_board->grid = malloc(new_board->size * sizeof(int *));
 	new_board->freespcs = board->freespcs;
+	board->diffnum = NULL;
 	for (int i = 0; i < new_board->size; ++i) {
 		new_board->grid[i] = malloc(new_board->size * sizeof(int));
 		memcpy(new_board->grid[i], board->grid[i],
@@ -41,6 +43,8 @@ static struct sudoku_board *sudoku_board_clone(struct sudoku_board *board)
 bool sudoku_goaltest(void *e)
 {
 	struct sudoku_board *board = e;
+	printf("Checking sudoku: \n");
+	sudoku_print_board(board);
 	int row[BOARD_SIZE] = {0};
 	int column[BOARD_SIZE] = {0};
 	int grid[BOARD_SIZE] = {0};
@@ -82,12 +86,26 @@ bool sudoku_goaltest(void *e)
 }
 
 static bool check_grid_section(struct sudoku_board *board,
-			       int num, int x, int y)
+			       int num, int x, int y, unsigned *diffnum)
 {
-	for (int i = x; i < x + BOARD_MUL; ++i) {
-		for (int j = y; j < y + BOARD_MUL; ++j) {
-			if (num == board->grid[i][j]) {
-				return true;
+	if (diffnum != NULL) {
+		for (int i = x; i < x + BOARD_MUL; ++i) {
+			for (int j = y; j < y + BOARD_MUL; ++j) {
+				int grid_val = board->grid[i][j];
+				if (num == grid_val) {
+					return true;
+				}
+				if (grid_val != 0) {
+					diffnum[grid_val - 1] = 1;
+				}
+			}
+		}
+	} else {
+		for (int i = x; i < x + BOARD_MUL; ++i) {
+			for (int j = y; j < y + BOARD_MUL; ++j) {
+				if (num == board->grid[i][j]) {
+					return true;
+				}
 			}
 		}
 	}
@@ -95,56 +113,99 @@ static bool check_grid_section(struct sudoku_board *board,
 }
 
 
-static bool is_in_grid(struct sudoku_board *board, int num, int row, int col)
+static bool is_in_grid_with_diff(struct sudoku_board *board, int num,
+				  int row, int col, unsigned *diffnum)
 {
 	if (row < BOARD_MUL && col < BOARD_MUL) {
-		return check_grid_section(board, num, 0, 0);
+		return check_grid_section(board, num, 0, 0, diffnum);
 	}
 
 	if (row >= BOARD_MUL && col < BOARD_MUL) {
-		return check_grid_section(board, num, BOARD_MUL, 0);
+		return check_grid_section(board, num, BOARD_MUL, 0, diffnum);
 	}
 	if (row < BOARD_MUL && col >= BOARD_MUL) {
-		return check_grid_section(board, num, 0, BOARD_MUL);
+		return check_grid_section(board, num, 0, BOARD_MUL, diffnum);
 	}
 
 	if (row >= BOARD_MUL && col >= BOARD_MUL) {
-		return check_grid_section(board, num, BOARD_MUL, BOARD_MUL);
+		return check_grid_section(board, num, BOARD_MUL,
+					  BOARD_MUL, diffnum);
 	}
 
 	return false;
 }
 
-static void add_valid_states(GArray *neighbors, struct sudoku_board *board,
+static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 			     int row, int col)
 {
 	for (int i = 1; i <= board->size; ++i) {
 		bool is_good = true;
+		unsigned *diffnum = calloc(board->size, sizeof(unsigned));
 		for (int j = 0; j < board->size; ++j) {
-			if (board->grid[row][j] == i || board->grid[j][col] == i
-			    || is_in_grid(board, i, row, col)) {
+			int rowval = board->grid[row][j];
+			int colval = board->grid[j][col];
+			if (rowval == i 
+			    || colval == i) {
 				is_good = false;
 				break;
 			}
+			if (rowval != 0) {
+				diffnum[rowval - 1] = 1;
+			}
+			if (colval != 0) {
+				diffnum[colval - 1] = 1;
+			}
+		}
+		if (is_good) {
+			is_good = !is_in_grid_with_diff(board, i, row,
+							 col, diffnum);
 		}
 		if (is_good) {
 			struct sudoku_board *new_board =
 				sudoku_board_clone(board);
 			new_board->grid[row][col] = i;
 			new_board->freespcs--;
+			new_board->diffnum = diffnum;
 			struct a_star_node *new_node =
 				malloc(sizeof(struct a_star_node));
 			new_node->elm = new_board;
-			g_array_append_val(neighbors, new_node);
+			g_ptr_array_add(neighbors, new_node);
 		}
 	}
 }
 
-GArray *sudoku_expand(void *e)
+static inline void sudoku_free_a_star_void(void *pboard)
+{
+	free_a_star_node((struct a_star_node *) pboard, sudoku_free_board_void);
+}
+
+inline void sudoku_free_board_void(void **pboard)
+{
+	sudoku_free_board((struct sudoku_board **)pboard);
+}
+
+
+void sudoku_free_board(struct sudoku_board **pboard)
+{
+	struct sudoku_board *board = *pboard;
+	if (board != NULL) {
+		for(unsigned i = 0; i < board->size; ++i) {
+			free(board->grid[i]);
+		}
+		if (board->diffnum != NULL) {
+			free(board->diffnum);
+		}
+		free(board->grid);
+		free(board);
+		*pboard = NULL;
+	}
+}
+
+GPtrArray *sudoku_expand(void *e)
 {
 	struct sudoku_board *board = e;
-	GArray *neighbors = g_array_new(false, false,
-		                        sizeof(struct a_star_node *));
+	GPtrArray* neighbors = 
+		g_ptr_array_new_with_free_func(sudoku_free_a_star_void);
 	for (int i = 0; i < board->size; ++i) {
 		for (int j = 0; j < board->size; ++j) {
 			if (board->grid[i][j] == 0) {
@@ -167,22 +228,20 @@ int sudoku_path_cost(void *c, void *n)
 }
 int sudoku_heuristic(void *n)
 {
-	return 0;
-}
-
-
-void sudoku_delete_board(struct sudoku_board **pboard)
-{
-	struct sudoku_board *board = *pboard;
-	if (board != NULL) {
-		for(unsigned i = 0; i < board->size; ++i) {
-			free(board->grid[i]);
-		}
-		free(board->grid);
-		free(board);
-		*pboard = NULL;
+	struct sudoku_board *board = n;
+	if (board->diffnum == NULL) {
+		return 0;
 	}
+	int score = 0;
+	for (int i = 0; i < board->size; ++i) {
+		if (board->diffnum[i] == 1) {
+			score++;
+		}
+	}
+	return score;
 }
+
+
 
 void sudoku_print_board(struct sudoku_board *board)
 {
@@ -209,7 +268,7 @@ struct sudoku_board *sudoku_read(char *in)
 				board->grid[i][j] = 0;
 				board->freespcs++;
 			} else if (!isdigit(e) && e > 0 && e <= board->size) {
-				sudoku_delete_board(&board);
+				sudoku_free_board(&board);
 				return NULL;
 			} else {
 
