@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 			printf("Error\n");
 		}
 		printf("Solution: \n");
-		/* sudoku_print_board(final); */
+		sudoku_print_board(final);
 		sudoku_delete_board(&board);
 	} else {
 		printf(usage, argv[0]);

@@ -57,7 +57,7 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 		struct a_star_node *cnode = pqueue_pop(frontier);
 		if ((*goaltest)(cnode->elm)) {
 			printf("Found solution\n");
-			return cnode->elm;
+			return cnode;
 		}
 		GArray *neighbors = (*expand)(cnode->elm);
 		for (int i = 0; i < neighbors->len; ++i) {
