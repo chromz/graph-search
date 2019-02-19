@@ -13,13 +13,15 @@ struct a_star_node {
 	size_t pos;
 };
 
-void free_a_star_node(struct a_star_node *n, void (*free_elm)(void **));
+void free_a_star_node(struct a_star_node *n, void (*free_elm)(void *));
 
 struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
-	GPtrArray *(*expand)(void *),
-	int (*path_cost)(void *, void *),
-	int (*heuristic)(void *),
-	void (*free_elm)(void **));
+				 GPtrArray *(*expand)(void *),
+				 gboolean (*compare)(gconstpointer,
+						     gconstpointer),
+				 int (*path_cost)(void *, void *),
+				 int (*heuristic)(void *),
+				 void (*free_elm)(void *));
 
 
 

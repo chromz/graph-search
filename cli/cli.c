@@ -23,7 +23,8 @@ int main(int argc, char **argv)
 		printf("Solving sudoku... \n");
 		sudoku_print_board(board);
 		struct a_star_node *result = 
-			a_star_solve(board, sudoku_goaltest, sudoku_expand,
+			a_star_solve(board, sudoku_goaltest,
+				     sudoku_expand, sudoku_compare,
 				     sudoku_path_cost, sudoku_heuristic,
 				     sudoku_free_board_void);
 		struct sudoku_board *final = result->elm;

@@ -12,6 +12,24 @@
 #define BOARD_SIZE 4
 #define BOARD_MUL 2
 
+gboolean sudoku_compare(gconstpointer a, gconstpointer b)
+{
+	const struct sudoku_board *ba = *((void **) a);
+	const struct sudoku_board *bb = *((void **) b);
+	if (ba->size != bb->size) {
+		return false;
+	}
+	for (int i = 0; i < ba->size; ++i) {
+		for (int j = 0; j < ba->size; ++j) {
+			if (ba->grid[i][j] != bb->grid[i][j]) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+
 static struct sudoku_board *sudoku_new_board(int size)
 {
 	struct sudoku_board *board = malloc(sizeof(struct sudoku_board));
@@ -140,7 +158,7 @@ static inline void sudoku_free_a_star_void(void *pboard)
 	free_a_star_node((struct a_star_node *) pboard, sudoku_free_board_void);
 }
 
-inline void sudoku_free_board_void(void **pboard)
+inline void sudoku_free_board_void(void *pboard)
 {
 	sudoku_free_board((struct sudoku_board **)pboard);
 }

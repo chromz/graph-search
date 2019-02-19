@@ -29,20 +29,34 @@ static void set_pos(void *e, size_t pos)
 	((struct a_star_node *) e)->pos = pos;
 }
 
-void free_a_star_node(struct a_star_node *n, void (*free_elm)(void **))
+void free_a_star_node(struct a_star_node *n, void (*free_elm)(void *))
 {
 	free_elm(&n->elm);
 	free(n);
 }
 
+static inline void free_all(pqueue_t *frontier, GHashTable *visited,
+			    void (*free_elm)(void *))
+{
+	g_hash_table_destroy(visited);
+	struct a_star_node *node;
+	while (( node = pqueue_pop(frontier))) {
+		free_a_star_node(node, free_elm);
+	}
+	pqueue_free(frontier);
+}
+
 struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 				 GPtrArray *(*expand)(void *),
+				 gboolean (*compare)(gconstpointer,
+						     gconstpointer),
 				 int (*path_cost)(void *, void *),
 				 int (*heuristic)(void *),
-				 void (*free_elm)(void **))
+				 void (*free_elm)(void *))
 {
 	pqueue_t *frontier;
-	GHashTable *visited = g_hash_table_new(NULL, NULL);
+	GHashTable *visited = g_hash_table_new_full(NULL, compare,
+						    free_elm, NULL);
 	struct a_star_node *start_node = malloc(sizeof(struct a_star_node));
 	if (start_node == NULL) {
 		return NULL;
@@ -63,7 +77,7 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 		if ((*goaltest)(cnode->elm)) {
 			// FREE ALL
 			printf("Found solution\n");
-			pqueue_free(frontier);
+			free_all(frontier, visited, free_elm);
 			return cnode;
 		}
 		GPtrArray *neighbors = (*expand)(cnode->elm);
@@ -73,17 +87,18 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 			int ccost = GPOINTER_TO_INT(
 					g_hash_table_lookup(visited, cnode));
 			int cost = (*path_cost)(cnode, next) + ccost;
-			if (!g_hash_table_lookup_extended(visited,
-					                 next, NULL, NULL)
-			    || cost < GPOINTER_TO_INT(g_hash_table_lookup(
-					visited, cnode))) {
+			gboolean in = g_hash_table_lookup_extended(
+					visited, next, NULL, NULL);
+			if (!in || cost 
+			    < GPOINTER_TO_INT(g_hash_table_lookup(
+					      visited, cnode))) {
 				g_hash_table_insert(visited, next,
 						    GINT_TO_POINTER(cost));
 				next->pri = cost + (*heuristic)(next->elm);
 				pqueue_insert(frontier, next);
 			}
 		}
-		g_ptr_array_free(neighbors, false);
+		/* g_ptr_array_free(neighbors, false); */
 		/* free_a_star_node(cnode, free_elm); */
 	}
 	struct a_star_node *result = malloc(sizeof(struct a_star_node));

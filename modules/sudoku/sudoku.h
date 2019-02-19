@@ -21,7 +21,9 @@ GPtrArray *sudoku_expand(void *e);
 int sudoku_path_cost(void *c, void *n);
 int sudoku_heuristic(void *n);
 
-void sudoku_free_board_void(void **pboard);
+gboolean sudoku_compare(gconstpointer a, gconstpointer b);
+
+void sudoku_free_board_void(void *pboard);
 void sudoku_free_board(struct sudoku_board **pboard);
 void sudoku_print_board(struct sudoku_board *board);
 
