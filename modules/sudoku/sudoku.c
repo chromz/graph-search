@@ -181,7 +181,6 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 			new_board->grid[row][col] = i;
 			new_board->freespcs--;
 			new_board->diffnum = diffnum;
-			free(diffnum);
 			struct a_star_node *new_node =
 				malloc(sizeof(struct a_star_node));
 			new_node->elm = new_board;
@@ -209,8 +208,8 @@ GPtrArray *sudoku_expand(void *e)
 
 int sudoku_path_cost(void *c, void *n)
 {
-	struct sudoku_board *board1 = (struct sudoku_board *) c;
-	struct sudoku_board *board2 = (struct sudoku_board *) n;
+	struct sudoku_board *board1 = c;
+	struct sudoku_board *board2 = n;
 	return (board2->freespcs > board1->freespcs)
 		? board2->freespcs - board1->freespcs
 		: board1->freespcs - board2->freespcs;

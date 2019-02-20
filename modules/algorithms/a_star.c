@@ -86,6 +86,7 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 			// FREE ALL
 			printf("Found solution\n");
 			g_hash_table_steal(visited, cnode);
+			free_a_star_node(start_node, free_elm);
 			free_all(frontier, visited, free_elm);
 			return cnode;
 		}
@@ -95,7 +96,7 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 				g_ptr_array_index(neighbors, i);
 			int ccost = GPOINTER_TO_INT(
 					g_hash_table_lookup(visited, cnode));
-			int cost = (*path_cost)(cnode, next) + ccost;
+			int cost = (*path_cost)(cnode->elm, next->elm) + ccost;
 			gboolean in = g_hash_table_lookup_extended(
 					visited, next, NULL, NULL);
 			if (!in || cost 
@@ -105,6 +106,8 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 						    GINT_TO_POINTER(cost));
 				next->pri = cost + (*heuristic)(next->elm);
 				pqueue_insert(frontier, next);
+			} else {
+				printf("xxx\n");
 			}
 		}
 		/* g_ptr_array_free(neighbors, false); */

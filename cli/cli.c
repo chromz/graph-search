@@ -34,6 +34,7 @@ int main(int argc, char **argv)
 		printf("Solution: \n");
 		sudoku_print_board(final);
 		sudoku_free_board(&board);
+		free_a_star_node(result, sudoku_free_board_void);
 	} else {
 		printf(usage, argv[0]);
 		return 1;
