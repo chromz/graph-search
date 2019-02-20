@@ -237,6 +237,43 @@ void sudoku_print_board(struct sudoku_board *board)
 	}
 }
 
+static bool is_valid_board(struct sudoku_board *board)
+{
+	int row[BOARD_SIZE] = {0};
+	int column[BOARD_SIZE] = {0};
+	int grid[BOARD_SIZE] = {0};
+	bool check_row[BOARD_SIZE + 1] = {false};
+	bool check_column[BOARD_SIZE + 1] = {false};
+	bool check_grid[BOARD_SIZE + 1] = {false};
+	for (int i = 0; i < BOARD_SIZE; ++i) {
+		for (int j = 0; j < BOARD_SIZE; ++j) {
+			column[j] = board->grid[i][j];
+			row[j] = board->grid[i][j];
+			int index_row = (i * BOARD_MUL) 
+				        % BOARD_SIZE + j % BOARD_MUL;
+			int index_col = (i / BOARD_MUL) * BOARD_MUL 
+				        + j / BOARD_MUL;
+			grid[j] = board->grid[index_row][index_col];
+		}
+		for (int k = 0; k < BOARD_SIZE; ++k) {
+			if ((row[k] && check_row[row[k]])
+			    || (column[k] && check_column[column[k]])
+			    || (grid[k] && check_grid[grid[k]])) {
+				return false;
+			}
+			check_row[row[k]] = true;
+			check_column[column[k]] = true;
+			check_grid[grid[k]] = true;
+		}
+		memset(row, 0, sizeof(row));
+		memset(column, 0, sizeof(column));
+		memset(grid, 0, sizeof(grid));
+		memset(check_row, 0, sizeof(check_row));
+		memset(check_column, 0, sizeof(check_row));
+		memset(check_grid, 0, sizeof(check_row));
+	}
+	return true;
+}
 struct sudoku_board *sudoku_read(char *in)
 {
 	size_t len = strlen(in);
@@ -250,14 +287,18 @@ struct sudoku_board *sudoku_read(char *in)
 			if (e == '.') {
 				board->grid[i][j] = 0;
 				board->freespcs++;
-			} else if (!isdigit(e) && e > 0 && e <= board->size) {
+			} else if (!isdigit(e) 
+				   || (e - '0') > board->size) {
 				sudoku_free_board(&board);
 				return NULL;
 			} else {
-
 				board->grid[i][j] = e - '0';
 			}
 		}
+	}
+	if (!is_valid_board(board)) {
+		sudoku_free_board(&board);
+		return NULL;
 	}
 	return board;
 }
