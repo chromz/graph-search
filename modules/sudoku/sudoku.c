@@ -64,16 +64,9 @@ static struct sudoku_board *sudoku_board_clone(struct sudoku_board *board)
 bool sudoku_goaltest(void *e)
 {
 	struct sudoku_board *board = e;
-	/* printf("Checking sudoku: \n"); */
-	/* sudoku_print_board(board); */
-	for (int i = 0; i < board->size; ++i) {
-		for (int j = 0; j < board->size; ++j) {
-			if (board->grid[i][j] == 0) {
-				return false;
-			}
-		}
-	}
-	return true;
+	printf("Checking sudoku: \n");
+	sudoku_print_board(board);
+	return board->freespcs == 0;
 }
 
 static bool check_grid_section(struct sudoku_board *board,
@@ -195,8 +188,7 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 GPtrArray *sudoku_expand(void *e)
 {
 	struct sudoku_board *board = e;
-	GPtrArray* neighbors = 
-		g_ptr_array_new_with_free_func(sudoku_free_a_star_void);
+	GPtrArray* neighbors = g_ptr_array_new();
 	for (int i = 0; i < board->size; ++i) {
 		for (int j = 0; j < board->size; ++j) {
 			if (board->grid[i][j] == 0) {

@@ -107,7 +107,7 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 				pqueue_insert(frontier, next);
 			}
 		}
-		g_ptr_array_free(neighbors, false);
+		g_ptr_array_free(neighbors, true);
 	}
 	struct a_star_node *result = malloc(sizeof(struct a_star_node));
 	result->elm = NULL;
