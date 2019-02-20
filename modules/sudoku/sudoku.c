@@ -161,10 +161,10 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 				break;
 			}
 			if (rowval != 0) {
-				diffnum[rowval - 1] = 1;
+				diffnum[rowval - 1] += 1;
 			}
 			if (colval != 0) {
-				diffnum[colval - 1] = 1;
+				diffnum[colval - 1] += 1;
 			}
 		}
 		if (is_good && !is_in_grid_with_diff(board, i, row,
@@ -196,6 +196,7 @@ GPtrArray *sudoku_expand(void *e)
 			}
 		}
 	}
+
 	return neighbors;
 }
 
@@ -216,8 +217,8 @@ int sudoku_heuristic(void *n)
 	}
 	int score = 0;
 	for (int i = 0; i < board->size; ++i) {
-		if (board->diffnum[i] == 1) {
-			score++;
+		if (board->diffnum[i] != 0) {
+			score += board->diffnum[i];
 		}
 	}
 	return score;
