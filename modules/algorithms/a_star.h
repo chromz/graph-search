@@ -8,7 +8,6 @@
 
 struct a_star_node {
 	void *elm;
-	void *prev;
 	pqueue_pri_t pri;
 	size_t pos;
 };

@@ -70,7 +70,6 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 		return NULL;
 	}
 	start_node->elm = start;
-	start_node->prev = NULL;
 	start_node->pri = 0;
 
 	frontier = pqueue_init(1, cmp_pri, get_pri, set_pri, get_pos, set_pos);
@@ -84,9 +83,9 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 		struct a_star_node *cnode = pqueue_pop(frontier);
 		if ((*goaltest)(cnode->elm)) {
 			// FREE ALL
-			printf("Found solution\n");
 			g_hash_table_steal(visited, cnode);
-			free_a_star_node(start_node, free_elm);
+			g_hash_table_steal(visited, start_node);
+			free(start_node);
 			free_all(frontier, visited, free_elm);
 			return cnode;
 		}
@@ -106,12 +105,9 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 						    GINT_TO_POINTER(cost));
 				next->pri = cost + (*heuristic)(next->elm);
 				pqueue_insert(frontier, next);
-			} else {
-				printf("xxx\n");
 			}
 		}
-		/* g_ptr_array_free(neighbors, false); */
-		/* free_a_star_node(cnode, free_elm); */
+		g_ptr_array_free(neighbors, false);
 	}
 	struct a_star_node *result = malloc(sizeof(struct a_star_node));
 	result->elm = NULL;

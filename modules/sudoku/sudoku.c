@@ -185,6 +185,8 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 				malloc(sizeof(struct a_star_node));
 			new_node->elm = new_board;
 			g_ptr_array_add(neighbors, new_node);
+		} else {
+			free(diffnum);
 		}
 	}
 }
@@ -202,7 +204,6 @@ GPtrArray *sudoku_expand(void *e)
 		}
 	}
 	return neighbors;
-
 }
 
 
