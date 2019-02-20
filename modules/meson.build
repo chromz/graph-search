@@ -18,3 +18,11 @@ sudoku_lib = static_library('sudoku', sudoku_sources,
   link_with : [algs_lib],
   dependencies : [glib_dep])
 
+fifteen_sources = [
+  'fifteen/fifteen.c',
+]
+
+fifteen_lib = static_library('fifteen', fifteen_sources,
+  include_directories : libs_include_dirs,
+  link_with : [algs_lib],
+  dependencies : [glib_dep])
