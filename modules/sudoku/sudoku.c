@@ -139,14 +139,12 @@ inline void sudoku_free_board_void(void *pboard)
 
 void sudoku_free_board(struct sudoku_board **pboard)
 {
-	static int x = 0;
 	struct sudoku_board *board = *pboard;
 	if (board != NULL) {
 		for(unsigned i = 0; i < board->size; ++i) {
 			free(board->grid[i]);
 		}
 		if (board->diffnum != NULL) {
-			printf("AAAA %d\n", ++x);
 			free(board->diffnum);
 		}
 		free(board->grid);
@@ -186,7 +184,7 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 			struct a_star_node *new_node =
 				malloc(sizeof(struct a_star_node));
 			new_node->elm = new_board;
-			g_ptr_array_add(neighbors, new_node);
+			g_ptr_array_add(neighbors, (gpointer) new_node);
 		} else {
 			free(diffnum);
 		}
