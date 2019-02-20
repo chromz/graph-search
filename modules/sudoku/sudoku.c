@@ -14,6 +14,9 @@
 
 gboolean sudoku_compare(gconstpointer a, gconstpointer b)
 {
+	if (a == b) {
+		return true;
+	}
 	const struct sudoku_board *ba = *((void **) a);
 	const struct sudoku_board *bb = *((void **) b);
 	if (ba->size != bb->size) {
@@ -49,7 +52,7 @@ static struct sudoku_board *sudoku_board_clone(struct sudoku_board *board)
 	new_board->size = board->size;
 	new_board->grid = malloc(new_board->size * sizeof(int *));
 	new_board->freespcs = board->freespcs;
-	board->diffnum = NULL;
+	new_board->diffnum = NULL;
 	for (int i = 0; i < new_board->size; ++i) {
 		new_board->grid[i] = malloc(new_board->size * sizeof(int));
 		memcpy(new_board->grid[i], board->grid[i],
@@ -136,12 +139,14 @@ inline void sudoku_free_board_void(void *pboard)
 
 void sudoku_free_board(struct sudoku_board **pboard)
 {
+	static int x = 0;
 	struct sudoku_board *board = *pboard;
 	if (board != NULL) {
 		for(unsigned i = 0; i < board->size; ++i) {
 			free(board->grid[i]);
 		}
 		if (board->diffnum != NULL) {
+			printf("AAAA %d\n", ++x);
 			free(board->diffnum);
 		}
 		free(board->grid);

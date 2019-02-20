@@ -36,14 +36,13 @@ void inline free_a_star_node(struct a_star_node *n, void (*free_elm)(void *))
 	free(n);
 }
 
-static inline void free_all(pqueue_t *frontier, GHashTable *visited,
-			    void (*free_elm)(void *))
+static inline void free_all(pqueue_t *frontier, GHashTable *visited)
 {
 	g_hash_table_destroy(visited);
-	struct a_star_node *node;
-	while (( node = pqueue_pop(frontier))) {
-		free_a_star_node(node, free_elm);
-	}
+	/* struct a_star_node *node; */
+	/* while (( node = pqueue_pop(frontier))) { */
+	/* 	free_a_star_node(node, free_elm); */
+	/* } */
 	pqueue_free(frontier);
 }
 
@@ -64,7 +63,8 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 	pqueue_t *frontier;
 	free_element_fun = free_elm;
 	GHashTable *visited = g_hash_table_new_full(NULL, compare,
-						    free_element_fun, NULL);
+						    free_a_star_node_void,
+						    NULL);
 	struct a_star_node *start_node = malloc(sizeof(struct a_star_node));
 	if (start_node == NULL) {
 		return NULL;
@@ -83,22 +83,24 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 		struct a_star_node *cnode = pqueue_pop(frontier);
 		if ((*goaltest)(cnode->elm)) {
 			// FREE ALL
+			printf("HASH SIZE %d\n", g_hash_table_size(visited));
+			printf("pqueue SIZE %lu\n", pqueue_size(frontier));
 			printf("Found solution\n");
 			g_hash_table_steal(visited, cnode);
 			g_hash_table_steal(visited, start_node);
 			free(start_node);
-			free_all(frontier, visited, free_elm);
+			free_all(frontier, visited);
 			return cnode;
 		}
 		GPtrArray *neighbors = (*expand)(cnode->elm);
+		printf("LEN %d\n", neighbors->len);
 		for (int i = 0; i < neighbors->len; ++i) {
 			struct a_star_node *next = 
 				g_ptr_array_index(neighbors, i);
 			int ccost = GPOINTER_TO_INT(
 					g_hash_table_lookup(visited, cnode));
 			int cost = (*path_cost)(cnode->elm, next->elm) + ccost;
-			gboolean in = g_hash_table_lookup_extended(
-					visited, next, NULL, NULL);
+			gboolean in = g_hash_table_contains(visited, next);
 			if (!in || cost 
 			    < GPOINTER_TO_INT(g_hash_table_lookup(
 					      visited, cnode))) {
