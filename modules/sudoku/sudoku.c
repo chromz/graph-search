@@ -45,7 +45,7 @@ static struct sudoku_board *sudoku_new_board(int size)
 
 static struct sudoku_board *sudoku_board_clone(struct sudoku_board *board)
 {
-	struct sudoku_board *new_board= malloc(sizeof(struct sudoku_board));
+	struct sudoku_board *new_board = malloc(sizeof(struct sudoku_board));
 	new_board->size = board->size;
 	new_board->grid = malloc(new_board->size * sizeof(int *));
 	new_board->freespcs = board->freespcs;
@@ -171,15 +171,12 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 				diffnum[colval - 1] = 1;
 			}
 		}
-		if (is_good) {
-			is_good = !is_in_grid_with_diff(board, i, row,
-							 col, diffnum);
-		}
-		if (is_good) {
+		if (is_good && !is_in_grid_with_diff(board, i, row,
+						     col, diffnum)) {
 			struct sudoku_board *new_board =
 				sudoku_board_clone(board);
-			new_board->grid[row][col] = i;
 			new_board->freespcs--;
+			new_board->grid[row][col] = i;
 			new_board->diffnum = diffnum;
 			struct a_star_node *new_node =
 				malloc(sizeof(struct a_star_node));
@@ -188,6 +185,7 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 		} else {
 			free(diffnum);
 		}
+
 	}
 }
 

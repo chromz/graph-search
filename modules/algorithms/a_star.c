@@ -83,6 +83,7 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 		struct a_star_node *cnode = pqueue_pop(frontier);
 		if ((*goaltest)(cnode->elm)) {
 			// FREE ALL
+			printf("Found solution\n");
 			g_hash_table_steal(visited, cnode);
 			g_hash_table_steal(visited, start_node);
 			free(start_node);
