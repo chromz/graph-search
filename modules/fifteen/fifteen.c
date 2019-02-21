@@ -58,6 +58,9 @@ bool fifteen_is_valid(struct fifteen_board *board)
 			}
 		}
 	}
+	if (inversions == 0) {
+		return true;
+	}
 	if ((((board->blanc + 1) % 4) - 4) % 2 == 0) {
 		return inversions % 2 == 1;
 	}
@@ -100,7 +103,7 @@ bool fifteen_goaltest(void *e)
 	printf("Checking board:\n");
 	fifteen_print_board(board);
 	for (int i = 1; i <= board->size; ++i) {
-		if (board->grid[i - 1] != i) {
+		if (board->grid[i - 1] != i % board->size) {
 			return false;
 		}
 	}
@@ -201,6 +204,9 @@ gboolean fifteen_compare(gconstpointer a, gconstpointer b)
 	const struct fifteen_board *ba = *((void **) a);
 	const struct fifteen_board *bb = *((void **) b);
 	if (ba->size != bb ->size) {
+		return false;
+	}
+	if (ba->blanc != bb->blanc) {
 		return false;
 	}
 	for (int i = 0; i < ba->size; ++i) {

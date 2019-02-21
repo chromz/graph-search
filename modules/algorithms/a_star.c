@@ -10,6 +10,11 @@ static int cmp_pri(pqueue_pri_t next, pqueue_pri_t curr)
 	return next < curr;
 }
 
+static int cmp_pri_inv(pqueue_pri_t next, pqueue_pri_t curr)
+{
+	return next > curr;
+}
+
 static pqueue_pri_t get_pri(void *e)
 {
 	return ((struct a_star_node *) e)->pri;
@@ -52,7 +57,9 @@ static inline void free_a_star_node_void(void *pnode)
 	free_a_star_node(node, free_element_fun);
 }
 
-struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
+struct a_star_node *a_star_solve(void *start, 
+				 bool less_than,
+				 bool (*goaltest)(void *),
 				 GPtrArray *(*expand)(void *),
 				 gboolean (*compare)(gconstpointer,
 						     gconstpointer),
@@ -72,7 +79,13 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 	start_node->elm = start;
 	start_node->pri = 0;
 
-	frontier = pqueue_init(1, cmp_pri, get_pri, set_pri, get_pos, set_pos);
+	if (less_than) {
+		frontier = pqueue_init(1, cmp_pri, get_pri,
+				       set_pri, get_pos, set_pos);
+	} else {
+		frontier = pqueue_init(1, cmp_pri_inv,
+				       get_pri, set_pri, get_pos, set_pos);
+	}
 	if (!frontier) {
 		free(start_node);
 		return NULL;

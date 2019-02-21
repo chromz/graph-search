@@ -25,7 +25,9 @@ int main(int argc, char **argv)
 		printf("Solving sudoku... \n");
 		sudoku_print_board(board);
 		struct a_star_node *result = 
-			a_star_solve(board, sudoku_goaltest,
+			a_star_solve(board, 
+				     true,
+				     sudoku_goaltest,
 				     sudoku_expand, sudoku_compare,
 				     sudoku_path_cost, sudoku_heuristic,
 				     sudoku_free_board_void);
@@ -53,7 +55,9 @@ int main(int argc, char **argv)
 		}
 		printf("Puzzle is solvable :)\n");
 		struct a_star_node *result = 
-			a_star_solve(board, fifteen_goaltest,
+			a_star_solve(board, 
+				     false,
+				     fifteen_goaltest,
 				     fifteen_expand, fifteen_compare,
 				     fifteen_path_cost, fifteen_heuristic,
 				     fifteen_free_board_void);
