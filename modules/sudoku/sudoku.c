@@ -231,7 +231,7 @@ void sudoku_print_board(struct sudoku_board *board)
 	for (int i = 0; i < board->size; ++i) {
 		printf("|");
 		for (int j = 0; j < board->size; ++j) {
-			printf(" %c", board->grid[i][j] + '0');
+			printf(" %d", board->grid[i][j]);
 		}
 		printf(" |\n");
 	}

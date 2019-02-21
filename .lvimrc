@@ -4,5 +4,5 @@ let g:ale_linters = {
 \   'c': ['cppcheck', 'clangcheck', 'clangtidy'],
 \}
 
-command! Debug :TermdebugCommand builddir/cli sudoku .4.13.4.1..4.21.
+command! Debug :TermdebugCommand builddir/cli fifteen  F21C856B49A73ED.
 command! DebugD :TermdebugCommand builddir/cli sudoku 4...1...5...9.2.....6.7.3...5.3.4.1.1.8...6.4.9.7.1.8...5.4.1.....1.9...2...3...8

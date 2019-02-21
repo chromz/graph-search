@@ -8,12 +8,15 @@
 #include <stdbool.h>
 
 struct fifteen_board {
-	unsigned **grid;
+	unsigned *grid;
+	unsigned size;
 	unsigned diff;
+	int blanc;
 };
 
 struct fifteen_board *fifteen_read(char *in);
 
+bool fifteen_is_valid(struct fifteen_board *board);
 bool fifteen_goaltest(void *e);
 GPtrArray *fifteen_expand(void *e);
 int fifteen_path_cost(void *c, void *n);
