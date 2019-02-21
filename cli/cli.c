@@ -2,14 +2,16 @@
 
 #include "fifteen/fifteen.h"
 #include "sudoku/sudoku.h"
-
 #include "algorithms/a_star.h"
+
+#include <ncurses.h>
 #include <stdio.h>
 #include <string.h>
 
 
 int main(int argc, char **argv)
 {
+	
 	char *usage = "USAGE: %s (sudoku|sixteen) <source>\n";
 	if (argc != 3) {
 		printf(usage, argv[0]);
@@ -24,6 +26,9 @@ int main(int argc, char **argv)
 		}
 		printf("Solving sudoku... \n");
 		sudoku_print_board(board);
+		initscr();
+		cbreak();
+		noecho();
 		struct a_star_node *result = 
 			a_star_solve(board, 
 				     true,
@@ -31,6 +36,7 @@ int main(int argc, char **argv)
 				     sudoku_expand, sudoku_compare,
 				     sudoku_path_cost, sudoku_heuristic,
 				     sudoku_free_board_void);
+		endwin();
 		struct sudoku_board *final = result->elm;
 		if (final == NULL) {
 			printf("Error\n");
@@ -54,6 +60,9 @@ int main(int argc, char **argv)
 			return 1;
 		}
 		printf("Puzzle is solvable :)\n");
+		initscr();
+		cbreak();
+		noecho();
 		struct a_star_node *result = 
 			a_star_solve(board, 
 				     false,
@@ -61,6 +70,7 @@ int main(int argc, char **argv)
 				     fifteen_expand, fifteen_compare,
 				     fifteen_path_cost, fifteen_heuristic,
 				     fifteen_free_board_void);
+		endwin();
 		struct fifteen_board *final = result->elm;
 		if (final == NULL) {
 			printf("Error\n");

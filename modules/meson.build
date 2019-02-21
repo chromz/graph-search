@@ -1,4 +1,5 @@
 
+ncursesdep = dependency('ncurses', required: true)
 
 algs_sources = [
   'algorithms/a_star.c',
@@ -7,7 +8,7 @@ algs_sources = [
 algs_lib = static_library('algorithms',
   sources: algs_sources,
   include_directories : libs_include_dirs,
-  dependencies: [pqueue_dep, glib_dep])
+  dependencies: [pqueue_dep, glib_dep, ncursesdep])
 
 sudoku_sources = [
   'sudoku/sudoku.c',
@@ -16,7 +17,7 @@ sudoku_sources = [
 sudoku_lib = static_library('sudoku', sudoku_sources,
   include_directories : libs_include_dirs,
   link_with : [algs_lib],
-  dependencies : [glib_dep])
+  dependencies : [glib_dep, ncursesdep])
 
 fifteen_sources = [
   'fifteen/fifteen.c',

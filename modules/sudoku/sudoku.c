@@ -3,6 +3,7 @@
 #include "sudoku.h"
 #include <ctype.h>
 #include <gmodule.h>
+#include <ncurses.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -11,6 +12,35 @@
 
 #define BOARD_SIZE 9
 #define BOARD_MUL 3
+
+void sudoku_print_board(struct sudoku_board *board)
+{
+	for (int i = 0; i < board->size; ++i) {
+		printf("|");
+		for (int j = 0; j < board->size; ++j) {
+			printf(" %d", board->grid[i][j]);
+		}
+		printf(" |\n");
+	}
+}
+
+static void sudoku_print_board_ncurses(struct sudoku_board *board)
+{
+	clear();
+	printw("Board\n");
+	for (int i = 0; i < board->size; ++i) {
+		int y  = i + 1;
+		mvprintw(y, 0, "|");
+		for (int j = 0; j < board->size; ++j) {
+			mvprintw(y, j * 5 + 3, "%d", board->grid[i][j]);
+			if ((j + 1) % board->size == 0) {
+				mvprintw(y, j * 5 + 6, "|");
+			}
+		}
+
+	}
+	refresh();
+}
 
 gboolean sudoku_compare(gconstpointer a, gconstpointer b)
 {
@@ -64,8 +94,7 @@ static struct sudoku_board *sudoku_board_clone(struct sudoku_board *board)
 bool sudoku_goaltest(void *e)
 {
 	struct sudoku_board *board = e;
-	printf("Checking sudoku: \n");
-	sudoku_print_board(board);
+	sudoku_print_board_ncurses(board);
 	return board->freespcs == 0;
 }
 
@@ -214,16 +243,7 @@ int sudoku_heuristic(void *n)
 
 
 
-void sudoku_print_board(struct sudoku_board *board)
-{
-	for (int i = 0; i < board->size; ++i) {
-		printf("|");
-		for (int j = 0; j < board->size; ++j) {
-			printf(" %d", board->grid[i][j]);
-		}
-		printf(" |\n");
-	}
-}
+
 
 static bool is_valid_board(struct sudoku_board *board)
 {

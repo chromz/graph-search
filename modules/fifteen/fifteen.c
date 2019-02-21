@@ -1,10 +1,53 @@
 
 #include "fifteen.h"
 #include <ctype.h>
+#include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define FIFTEEN_SIZE 4
+
+void fifteen_print_board(struct fifteen_board *board)
+{
+	for (int i = 0; i < board->size; ++i) {
+		if (i % FIFTEEN_SIZE == 0) {
+			printf("|");
+		}
+		if (board->grid[i] == 0) {
+			printf(" x ");
+		} else if (board->grid[i] < 10){
+			printf(" %d ", board->grid[i]);
+		} else {
+			printf(" %d", board->grid[i]);
+		}
+		if ((i + 1) % FIFTEEN_SIZE == 0) {
+			printf(" |\n");
+		}
+	}
+
+}
+
+static void fifteen_print_board_ncurses(struct fifteen_board *board)
+{
+	clear();
+	printw("Board:\n");
+	for (int i = 0; i < board->size; ++i) {
+		int y = i / 4 + 1;
+		int x = i % 4 * 5 + 3;
+		if (i % FIFTEEN_SIZE == 0) {
+			mvprintw(y, 0, "|");
+		}
+		if (board->grid[i] == 0) {
+			mvprintw(y, x - 1, "x");
+		} else {
+			mvprintw(y, x - 1, "%d", board->grid[i]);
+		}
+		if ((i + 1) % FIFTEEN_SIZE == 0) {
+			mvprintw(y, x + 1, " |");
+		}
+	}
+	refresh();
+}
 
 inline void fifteen_free_board_void(void *pboard)
 {
@@ -100,8 +143,7 @@ struct fifteen_board *fifteen_read(char *in)
 bool fifteen_goaltest(void *e)
 {
 	struct fifteen_board *board = e;
-	printf("Checking board:\n");
-	fifteen_print_board(board);
+	fifteen_print_board_ncurses(board);
 	for (int i = 1; i <= board->size; ++i) {
 		if (board->grid[i - 1] != i % board->size) {
 			return false;
@@ -188,9 +230,21 @@ int fifteen_heuristic(void *n)
 	for (int i = 0; i < board->size; ++i) {
 		int num = board->grid[i];
 		if (num == 0) {
-			smhd += manhattan_distance(i, 15);
-		} else {
-			smhd += manhattan_distance(i, num - 1);
+			num = 16;
+		}
+
+		smhd += manhattan_distance(i, num - 1);
+		// Linear conflicts
+		int start = i / 4;
+		for (int j = start * 4; j < i; ++j) {
+			int num2 = board->grid[j];
+			int num_goal_line = (num - 1) / 4;
+			int num2_goal_line = (num2 - 1) / 4;
+			if (start == num_goal_line 
+			    && num_goal_line == num2_goal_line
+			    && num  < num2) {
+				smhd += 4;
+			}
 		}
 	}
 	return smhd;
@@ -217,22 +271,6 @@ gboolean fifteen_compare(gconstpointer a, gconstpointer b)
 	return true;
 }
 
-void fifteen_print_board(struct fifteen_board *board)
-{
-	for (int i = 0; i < board->size; ++i) {
-		if (i % FIFTEEN_SIZE == 0) {
-			printf("|");
-		}
-		if (board->grid[i] == 0) {
-			printf(" x ");
-		} else if (board->grid[i] < 10){
-			printf(" %d ", board->grid[i]);
-		} else {
-			printf(" %d", board->grid[i]);
-		}
-		if ((i + 1) % FIFTEEN_SIZE == 0) {
-			printf(" |\n");
-		}
-	}
-}
+
+
 
