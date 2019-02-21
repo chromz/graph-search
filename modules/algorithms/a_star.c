@@ -35,9 +35,21 @@ static void set_pos(void *e, size_t pos)
 	((struct a_star_node *) e)->pos = pos;
 }
 
-void inline free_a_star_node(struct a_star_node *n, void (*free_elm)(void *))
+inline void free_a_star_node(struct a_star_node *n, void (*free_elm)(void *))
 {
 	free_elm(&n->elm);
+	free(n);
+}
+
+inline void free_a_star_node_cascade(struct a_star_node *n,
+				     void (*free_elm)(void *))
+{
+	if (n->prev == NULL) {
+		free(n);
+		return;
+	}
+	free_elm(&n->elm);
+	free_a_star_node_cascade(n->prev, free_elm);
 	free(n);
 }
 
@@ -77,6 +89,7 @@ struct a_star_node *a_star_solve(void *start,
 		return NULL;
 	}
 	start_node->elm = start;
+	start_node->prev = NULL;
 	start_node->pri = 0;
 
 	if (less_than) {
@@ -96,10 +109,13 @@ struct a_star_node *a_star_solve(void *start,
 		struct a_star_node *cnode = pqueue_pop(frontier);
 		if ((*goaltest)(cnode->elm)) {
 			// FREE ALL
-			printf("Found solution\n");
 			g_hash_table_steal(costs, cnode);
 			g_hash_table_steal(costs, start_node);
-			free(start_node);
+			struct a_star_node *n = cnode->prev;
+			while (n != NULL) {
+				g_hash_table_steal(costs, n);
+				n = n->prev;
+			}
 			g_ptr_array_free(visited, true);
 			free_all(frontier, costs);
 			return cnode;
@@ -120,6 +136,7 @@ struct a_star_node *a_star_solve(void *start,
 						    GINT_TO_POINTER(cost));
 				g_ptr_array_add(visited, next);
 				next->pri = cost + (*heuristic)(next->elm);
+				next->prev = cnode;
 				pqueue_insert(frontier, next);
 			}
 		}

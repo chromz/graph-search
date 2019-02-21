@@ -10,8 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BOARD_SIZE 9
-#define BOARD_MUL 3
+#define BOARD_SIZE 4
+#define BOARD_MUL 2
 
 void sudoku_print_board(struct sudoku_board *board)
 {
@@ -194,6 +194,7 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 			struct a_star_node *new_node =
 				malloc(sizeof(struct a_star_node));
 			new_node->elm = new_board;
+			new_node->prev = NULL;
 			g_ptr_array_add(neighbors, new_node);
 		} else {
 			free(diffnum);

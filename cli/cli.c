@@ -41,10 +41,18 @@ int main(int argc, char **argv)
 		if (final == NULL) {
 			printf("Error\n");
 		}
+
 		printf("Solution: \n");
 		sudoku_print_board(final);
+		printf("[Path]: \n");
+		struct a_star_node *prev = result->prev;
+		while (prev != NULL) {
+			printf("Board:\n");
+			sudoku_print_board(prev->elm);
+			prev = prev->prev;
+		}
 		sudoku_free_board(&board);
-		free_a_star_node(result, sudoku_free_board_void);
+		free_a_star_node_cascade(result, sudoku_free_board_void);
 	} else if (strcmp(argv[1], "fifteen") == 0) {
 		struct fifteen_board *board = fifteen_read(argv[2]);
 		if (board == NULL) {

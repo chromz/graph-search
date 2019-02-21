@@ -8,11 +8,14 @@
 
 struct a_star_node {
 	void *elm;
+	struct a_star_node *prev;
 	pqueue_pri_t pri;
 	size_t pos;
 };
 
 void free_a_star_node(struct a_star_node *n, void (*free_elm)(void *));
+void free_a_star_node_cascade(struct a_star_node *n,
+				     void (*free_elm)(void *));
 
 struct a_star_node *a_star_solve(void *start, 
 				 bool less_than,
