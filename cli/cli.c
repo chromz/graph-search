@@ -85,8 +85,15 @@ int main(int argc, char **argv)
 		}
 		printf("Solution: \n");
 		fifteen_print_board(final);
+		printf("[Path]: \n");
+		struct a_star_node *prev = result->prev;
+		while (prev != NULL) {
+			printf("Board:\n");
+			fifteen_print_board(prev->elm);
+			prev = prev->prev;
+		}
 		fifteen_free_board(&board);
-		free_a_star_node(result, fifteen_free_board_void);
+		free_a_star_node_cascade(result, sudoku_free_board_void);
 	} else {
 		printf(usage, argv[0]);
 		return 1;
