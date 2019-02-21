@@ -25,7 +25,6 @@ static struct fifteen_board *fifteen_new_board(size_t size)
 {
 	struct fifteen_board * board = malloc(sizeof(struct fifteen_board));
 	board->size = size * size;
-	board->diff = 0;
 	board->blanc = -1;
 	board->grid = malloc(board->size * sizeof(unsigned));
 	return board;
@@ -98,31 +97,100 @@ struct fifteen_board *fifteen_read(char *in)
 bool fifteen_goaltest(void *e)
 {
 	struct fifteen_board *board = e;
+	printf("Checking board:\n");
+	fifteen_print_board(board);
 	for (int i = 1; i <= board->size; ++i) {
-		if (board->grid[i] != i % board->size) {
+		if (board->grid[i - 1] != i) {
 			return false;
 		}
 	}
 	return true;
 }
 
+static struct fifteen_board *clone_and_change(struct fifteen_board *board,
+					      int new_blanc_pos)
+{
+	struct fifteen_board *new_board = malloc(sizeof(struct fifteen_board));
+	new_board->size = board->size;
+	new_board->blanc = new_blanc_pos;
+	new_board->grid = malloc(new_board->size * sizeof(unsigned));
+	memcpy(new_board->grid, board->grid,
+	       new_board->size * sizeof(unsigned));
+	new_board->grid[new_blanc_pos] = 0;
+	new_board->grid[board->blanc] = board->grid[new_blanc_pos];
+	return new_board;
+}
+
 GPtrArray *fifteen_expand(void *e)
 {
-
+	struct fifteen_board *board = e;
+	GPtrArray *neighbors = g_ptr_array_new();
+	int top = board->blanc - 4;
+	int bottom = board->blanc + 4;
+	int left = board->blanc - 1;
+	int right = board->blanc + 1;
+	if (top >= 0) {
+		// GEN TOP State
+		struct fifteen_board *tboard = clone_and_change(board, top);
+		struct a_star_node *new_node = 
+			malloc(sizeof(struct a_star_node));
+		new_node->elm = tboard;
+		g_ptr_array_add(neighbors, new_node);
+	}
+	if (bottom < board->size) {
+		// GEN BOTTOM State
+		struct fifteen_board *bboard = clone_and_change(board, bottom);
+		struct a_star_node *new_node = 
+			malloc(sizeof(struct a_star_node));
+		new_node->elm = bboard;
+		g_ptr_array_add(neighbors, new_node);
+	}
+	if (left >= 0 && left / 4 == board->blanc / 4) {
+		// GEN LEFT State
+		struct fifteen_board *lboard = clone_and_change(board, left);
+		struct a_star_node *new_node = 
+			malloc(sizeof(struct a_star_node));
+		new_node->elm = lboard;
+		g_ptr_array_add(neighbors, new_node);
+	}
+	if (right < board->size && right / 4 == board->blanc / 4) {
+		// GEN Right state
+		struct fifteen_board *rboard = clone_and_change(board, right);
+		struct a_star_node *new_node = 
+			malloc(sizeof(struct a_star_node));
+		new_node->elm = rboard;
+		g_ptr_array_add(neighbors, new_node);
+	}
+	return neighbors;
 }
 
 int fifteen_path_cost(void *c, void *n)
 {
+	return 1;
+}
 
+static inline int manhattan_distance(int pos, int dest)
+{
+	int xpos = pos / 4;
+	int ypos = pos % 4;
+	int xdest = dest / 4;
+	int ydest = dest % 4;
+	return abs(xdest - xpos) + abs(ydest - ypos);
 }
 
 int fifteen_heuristic(void *n)
 {
 	struct fifteen_board *board = n;
-	int manhattan_distance = 0;
+	int smhd = 0;
 	for (int i = 0; i < board->size; ++i) {
-
+		int num = board->grid[i];
+		if (num == 0) {
+			smhd += manhattan_distance(i, 15);
+		} else {
+			smhd += manhattan_distance(i, num - 1);
+		}
 	}
+	return smhd;
 }
 
 gboolean fifteen_compare(gconstpointer a, gconstpointer b)

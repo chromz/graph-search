@@ -177,7 +177,7 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 			struct a_star_node *new_node =
 				malloc(sizeof(struct a_star_node));
 			new_node->elm = new_board;
-			g_ptr_array_add(neighbors, (gpointer) new_node);
+			g_ptr_array_add(neighbors, new_node);
 		} else {
 			free(diffnum);
 		}
@@ -188,7 +188,7 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 GPtrArray *sudoku_expand(void *e)
 {
 	struct sudoku_board *board = e;
-	GPtrArray* neighbors = g_ptr_array_new();
+	GPtrArray *neighbors = g_ptr_array_new();
 	for (int i = 0; i < board->size; ++i) {
 		for (int j = 0; j < board->size; ++j) {
 			if (board->grid[i][j] == 0) {

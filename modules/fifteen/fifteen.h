@@ -10,7 +10,6 @@
 struct fifteen_board {
 	unsigned *grid;
 	unsigned size;
-	unsigned diff;
 	int blanc;
 };
 

@@ -36,9 +36,9 @@ void inline free_a_star_node(struct a_star_node *n, void (*free_elm)(void *))
 	free(n);
 }
 
-static inline void free_all(pqueue_t *frontier, GHashTable *visited)
+static inline void free_all(pqueue_t *frontier, GHashTable *costs)
 {
-	g_hash_table_destroy(visited);
+	g_hash_table_destroy(costs);
 	/* struct a_star_node *node; */
 	/* while (( node = pqueue_pop(frontier))) { */
 	/* 	free_a_star_node(node, free_elm); */
@@ -62,9 +62,9 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 {
 	pqueue_t *frontier;
 	free_element_fun = free_elm;
-	GHashTable *visited = g_hash_table_new_full(NULL, compare,
-						    free_a_star_node_void,
-						    NULL);
+	GHashTable *costs = g_hash_table_new_full(NULL, NULL,
+						  free_a_star_node_void, NULL);
+	GPtrArray *visited = g_ptr_array_new();
 	struct a_star_node *start_node = malloc(sizeof(struct a_star_node));
 	if (start_node == NULL) {
 		return NULL;
@@ -78,16 +78,17 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 		return NULL;
 	}
 	pqueue_insert(frontier, start_node);
-	g_hash_table_insert(visited, start_node, GINT_TO_POINTER(0));
+	g_hash_table_insert(costs, start_node, GINT_TO_POINTER(0));
 	while (pqueue_size(frontier)) {
 		struct a_star_node *cnode = pqueue_pop(frontier);
 		if ((*goaltest)(cnode->elm)) {
 			// FREE ALL
 			printf("Found solution\n");
-			g_hash_table_steal(visited, cnode);
-			g_hash_table_steal(visited, start_node);
+			g_hash_table_steal(costs, cnode);
+			g_hash_table_steal(costs, start_node);
 			free(start_node);
-			free_all(frontier, visited);
+			g_ptr_array_free(visited, true);
+			free_all(frontier, costs);
 			return cnode;
 		}
 		GPtrArray *neighbors = (*expand)(cnode->elm);
@@ -95,14 +96,16 @@ struct a_star_node *a_star_solve(void *start, bool (*goaltest)(void *),
 			struct a_star_node *next = 
 				g_ptr_array_index(neighbors, i);
 			int ccost = GPOINTER_TO_INT(
-					g_hash_table_lookup(visited, cnode));
+					g_hash_table_lookup(costs, cnode));
 			int cost = (*path_cost)(cnode->elm, next->elm) + ccost;
-			gboolean in = g_hash_table_contains(visited, next);
+			gboolean in = g_ptr_array_find_with_equal_func(
+					visited, next, compare, NULL);
 			if (!in || cost 
 			    < GPOINTER_TO_INT(g_hash_table_lookup(
-					      visited, cnode))) {
-				g_hash_table_insert(visited, next,
+					      costs, cnode))) {
+				g_hash_table_insert(costs, next,
 						    GINT_TO_POINTER(cost));
+				g_ptr_array_add(visited, next);
 				next->pri = cost + (*heuristic)(next->elm);
 				pqueue_insert(frontier, next);
 			}
