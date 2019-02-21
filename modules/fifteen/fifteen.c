@@ -97,19 +97,32 @@ struct fifteen_board *fifteen_read(char *in)
 
 bool fifteen_goaltest(void *e)
 {
+	struct fifteen_board *board = e;
+	for (int i = 1; i <= board->size; ++i) {
+		if (board->grid[i] != i % board->size) {
+			return false;
+		}
+	}
 	return true;
 }
 
 GPtrArray *fifteen_expand(void *e)
 {
+
 }
 
 int fifteen_path_cost(void *c, void *n)
 {
+
 }
 
 int fifteen_heuristic(void *n)
 {
+	struct fifteen_board *board = n;
+	int manhattan_distance = 0;
+	for (int i = 0; i < board->size; ++i) {
+
+	}
 }
 
 gboolean fifteen_compare(gconstpointer a, gconstpointer b)

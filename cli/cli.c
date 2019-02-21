@@ -51,7 +51,20 @@ int main(int argc, char **argv)
 			fifteen_free_board(&board);
 			return 1;
 		}
-		printf("Board is solvable :)\n");
+		printf("Puzzle is solvable :)\n");
+		/* struct a_star_node *result = */ 
+		/* 	a_star_solve(board, fifteen_goaltest, */
+		/* 		     fifteen_expand, fifteen_compare, */
+		/* 		     fifteen_path_cost, fifteen_heuristic, */
+		/* 		     fifteen_free_board_void); */
+		/* struct fifteen_board *final = result->elm; */
+		/* if (final == NULL) { */
+		/* 	printf("Error\n"); */
+		/* } */
+		/* printf("Solution: \n"); */
+		/* fifteen_print_board(final); */
+		fifteen_free_board(&board);
+		/* free_a_star_node(result, fifteen_free_board_void); */
 	} else {
 		printf(usage, argv[0]);
 		return 1;
