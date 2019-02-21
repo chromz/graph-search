@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BOARD_SIZE 4
-#define BOARD_MUL 2
+#define BOARD_SIZE 9
+#define BOARD_MUL 3
 
 gboolean sudoku_compare(gconstpointer a, gconstpointer b)
 {
@@ -100,23 +100,11 @@ static bool check_grid_section(struct sudoku_board *board,
 static bool is_in_grid_with_diff(struct sudoku_board *board, int num,
 				  int row, int col, unsigned *diffnum)
 {
-	if (row < BOARD_MUL && col < BOARD_MUL) {
-		return check_grid_section(board, num, 0, 0, diffnum);
-	}
-
-	if (row >= BOARD_MUL && col < BOARD_MUL) {
-		return check_grid_section(board, num, BOARD_MUL, 0, diffnum);
-	}
-	if (row < BOARD_MUL && col >= BOARD_MUL) {
-		return check_grid_section(board, num, 0, BOARD_MUL, diffnum);
-	}
-
-	if (row >= BOARD_MUL && col >= BOARD_MUL) {
-		return check_grid_section(board, num, BOARD_MUL,
-					  BOARD_MUL, diffnum);
-	}
-
-	return false;
+	/* 4 / 3 = 1 * 3 = 3 */
+	/* 5 /3  = 1 * 3 = 3 */
+	return check_grid_section(board, num,
+				  row / BOARD_MUL * BOARD_MUL,
+				  col / BOARD_MUL * BOARD_MUL, diffnum);
 }
 
 static inline void sudoku_free_a_star_void(void *pboard)
@@ -161,10 +149,10 @@ static void add_valid_states(GPtrArray *neighbors, struct sudoku_board *board,
 				break;
 			}
 			if (rowval != 0) {
-				diffnum[rowval - 1] += 1;
+				diffnum[rowval - 1] = 1;
 			}
 			if (colval != 0) {
-				diffnum[colval - 1] += 1;
+				diffnum[colval - 1] = 1;
 			}
 		}
 		if (is_good && !is_in_grid_with_diff(board, i, row,
@@ -217,8 +205,8 @@ int sudoku_heuristic(void *n)
 	}
 	int score = 0;
 	for (int i = 0; i < board->size; ++i) {
-		if (board->diffnum[i] != 0) {
-			score += board->diffnum[i];
+		if (board->diffnum[i] == 1) {
+			score++;
 		}
 	}
 	return score;
