@@ -6,8 +6,9 @@
 
 #define FIFTEEN_SIZE 4
 
-void fifteen_free_board_void(void *pboard)
+inline void fifteen_free_board_void(void *pboard)
 {
+	fifteen_free_board((struct fifteen_board **)pboard);
 }
 
 void fifteen_free_board(struct fifteen_board **pboard)
@@ -113,9 +114,21 @@ int fifteen_heuristic(void *n)
 
 gboolean fifteen_compare(gconstpointer a, gconstpointer b)
 {
+	if (a == b) {
+		return true;
+	}
+	const struct fifteen_board *ba = *((void **) a);
+	const struct fifteen_board *bb = *((void **) b);
+	if (ba->size != bb ->size) {
+		return false;
+	}
+	for (int i = 0; i < ba->size; ++i) {
+		if (ba->grid[i] != bb->grid[i]) {
+			return false;
+		}
+	}
+	return true;
 }
-
-
 
 void fifteen_print_board(struct fifteen_board *board)
 {
