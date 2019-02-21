@@ -56,10 +56,6 @@ inline void free_a_star_node_cascade(struct a_star_node *n,
 static inline void free_all(pqueue_t *frontier, GHashTable *costs)
 {
 	g_hash_table_destroy(costs);
-	/* struct a_star_node *node; */
-	/* while (( node = pqueue_pop(frontier))) { */
-	/* 	free_a_star_node(node, free_elm); */
-	/* } */
 	pqueue_free(frontier);
 }
 
@@ -105,6 +101,7 @@ struct a_star_node *a_star_solve(void *start,
 	}
 	pqueue_insert(frontier, start_node);
 	g_hash_table_insert(costs, start_node, GINT_TO_POINTER(0));
+	g_ptr_array_add(visited, start_node);
 	while (pqueue_size(frontier)) {
 		struct a_star_node *cnode = pqueue_pop(frontier);
 		if ((*goaltest)(cnode->elm)) {

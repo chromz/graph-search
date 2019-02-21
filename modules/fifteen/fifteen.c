@@ -104,7 +104,7 @@ bool fifteen_is_valid(struct fifteen_board *board)
 	if (inversions == 0) {
 		return true;
 	}
-	if ((((board->blanc + 1) % 4) - 4) % 2 == 0) {
+	if (FIFTEEN_SIZE - (board->blanc / FIFTEEN_SIZE) % 2 == 0) {
 		return inversions % 2 == 1;
 	}
 	return inversions % 2 == 0;
@@ -211,7 +211,7 @@ GPtrArray *fifteen_expand(void *e)
 
 int fifteen_path_cost(void *c, void *n)
 {
-	return 1;
+	return 0;
 }
 
 static inline int manhattan_distance(int pos, int dest)
@@ -243,10 +243,11 @@ int fifteen_heuristic(void *n)
 			if (start == num_goal_line 
 			    && num_goal_line == num2_goal_line
 			    && num  < num2) {
-				smhd += 4;
+				smhd += 1;
 			}
 		}
 	}
+	/* fifteen_print_board_ncurses(board); */
 	return smhd;
 }
 

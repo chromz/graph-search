@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 			prev = prev->prev;
 		}
 		fifteen_free_board(&board);
-		free_a_star_node_cascade(result, sudoku_free_board_void);
+		free_a_star_node_cascade(result, fifteen_free_board_void);
 	} else {
 		printf(usage, argv[0]);
 		return 1;
