@@ -104,7 +104,8 @@ bool fifteen_is_valid(struct fifteen_board *board)
 	if (inversions == 0) {
 		return true;
 	}
-	if (FIFTEEN_SIZE - (board->blanc / FIFTEEN_SIZE) % 2 == 0) {
+	int pos = 4 - (board->blanc / 4);
+	if (pos % 2 == 0) {
 		return inversions % 2 == 1;
 	}
 	return inversions % 2 == 0;
@@ -211,7 +212,7 @@ GPtrArray *fifteen_expand(void *e)
 
 int fifteen_path_cost(void *c, void *n)
 {
-	return 0;
+	return 1;
 }
 
 static inline int manhattan_distance(int pos, int dest)
